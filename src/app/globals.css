@@ -2,18 +2,21 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #0f172a;
-  --bank-red: #b91c1c;
-  --bank-red-dark: #991b1b;
-  --wat: #0ea5e9;
+  --foreground: #111827;
+  --pax: #0f6f6b;        /* teal */
+  --pax-dark: #0d5c59;
+  --pax-light: #ccfbf1;
+  --warn: #b45309;
+  --ok: #15803d;
+  --bad: #b91c1c;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-bank-red: var(--bank-red);
-  --color-bank-red-dark: var(--bank-red-dark);
-  --color-wat: var(--wat);
+  --color-pax: var(--pax);
+  --color-pax-dark: var(--pax-dark);
+  --color-pax-light: var(--pax-light);
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
@@ -47,22 +50,19 @@ body {
   border-width: 0;
 }
 
-/* Accessible focus ring */
 :focus-visible {
-  outline: 3px solid #2563eb;
+  outline: 3px solid #0f6f6b;
   outline-offset: 2px;
 }
 
-/* Card */
-.case-card {
+.card {
   background: white;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
 }
 
-/* Status badge */
-.status-badge {
+.badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -73,22 +73,21 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
-.status-draft { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
-.status-evidence-incomplete { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
-.status-ready-for-bank { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
-.status-bank-complaint-submitted { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
-.status-bank-reference-recorded { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
-.status-waiting-for-ccms-upload { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
-.status-bank-resolution-window { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
-.status-eligible-for-cbn-escalation { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
-.status-cbn-escalation-prepared { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
-.status-resolved { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
-.status-disputed { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+.badge-match { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+.badge-declined { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+.badge-problem { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+.badge-unknown { background: #e2e8f0; color: #475569; border: 1px solid #cbd5e1; }
 
-/* Deceptive success banner (used by the seeded bug) */
-.fake-success {
+.section-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* Deceptive success banner */
+.fake-saved {
   background: #d1fae5;
   border: 1px solid #a7f3d0;
   color: #065f46;
 }
-.fake-success.hidden { display: none; }
+.fake-saved.hidden { display: none; }

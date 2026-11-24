@@ -1,120 +1,85 @@
-# CashCase — Demo Script (3–5 minutes)
+# PAXREACH — Demo Script (3–5 minutes)
 
-**YouTube demo:** 3–5 minutes. Walk through one complete ATM "debited/no cash" incident end to end.
+**YouTube demo:** 3–5 minutes. Walk through one complete "can the airline reach you?" contact assurance flow.
 
-**Presenter setup:** `npm run dev` → `http://localhost:3000`. Have the demo clock visible.
-
----
-
-## Minute 0–0:30 — The moment
-
-**Say:** "You withdraw ₦20,000 from an ATM. Your account is debited. The ATM dispenses nothing. You're stressed. What do you preserve? Who do you complain to? When can you escalate to CBN?"
-
-**Show:** CashCase incident page opens on: "ATM debited you, but no cash came out?"
-
-**Key point:** No long FAQ. One guided flow, under two minutes.
+**Presenter setup:** `npm run dev` → `http://localhost:3000`. Carrier Sandbox is clearly labelled as a local simulation, not a live airline.
 
 ---
 
-## Minute 0:30–1:30 — Incident intake (mobile-first)
+## 0:00–0:20 — The real failure (the problem)
 
-**Actions (click through):**
-1. ATM type: Own-bank ATM
-2. Your bank: FirstBank
-3. Transaction date/time: today
-4. Amount debited: ₦20,000
-5. Amount dispensed: ₦0 (default)
-6. ATM location: Lagos Island
-7. Terminal ID: T123 (optional)
-8. Click "Start incident"
+**Say:** "You book a flight through a travel agent. The agent puts their own phone and email in the airline booking record. The airline sends a delay or cancellation notice — it reaches the agent, not you. You arrive at the airport unaware of the disruption."
 
-**Show:** Case created, status DRAFT → EVIDENCE_INCOMPLETE.
+**Show:** Premium Times headline (27 May 2026): Nigerian aviation authority warned passengers arrived at Abuja airport unaware their flights were disrupted because agents used their own contact details.
 
-**Evidence checklist (show missing):**
-- ✗ Transaction alert or statement excerpt
-- ✗ Transaction reference or terminal ID (we have terminal ID)
-- ✓ ATM location
-
-**Say:** "Nothing is inferred. The checklist tells you exactly what's missing. You can't mark it ready for the bank until evidence is complete."
+**Say:** "The airline has a way to contact someone. It may not be the passenger."
 
 ---
 
-## Minute 1:30–2:30 — Bank-first route
+## 0:20–0:55 — The failure (seeded two-passenger booking)
 
-**Say:** "Per CBN, you must complain to your bank first and get a reference. CashCase does not let you escalate to CBN prematurely."
+**Open:** `http://localhost:3000`. Choose "BY5678 · ADEBAYO — Contact on wrong passenger (two adults)".
+
+**Show:** PAXREACH loads the booking. The reachability audit shows:
+- Passenger P1 (Funke): reachable — her email/phone are on P1.
+- Passenger P2 (Bola): NOT reachable — P2's record shows Funke's contact (misassigned to the wrong passenger).
+
+**Say:** "The contact exists in the PNR, but it's attached to the wrong passenger. The airline can reach Funke. It cannot reach Bola directly."
+
+---
+
+## 0:55–1:45 — The repair (consent + correction)
+
+**Show:** Bola enters her own email and phone, verifies control of each channel (clearly labelled local demo verification). PAXREACH shows the discrepancy: "A contact matching yours is attached to a different passenger."
+
+**Consent statement (plain language):** "You authorise these contact details to be shared with the airline for operational flight notifications only. Not for marketing." Bola approves.
+
+**Show:** PAXREACH applies the correction — writes Bola's email/phone to P2's CTCE/CTCM.
+
+---
+
+## 1:45–2:30 — The Drey moment (Kane catches the false save)
+
+**Switch to FS7777 (false-save bug demo, `NEXT_PUBLIC_FALSE_SAVE_PNR=true`).**
+
+**Say:** "Here's the moment that makes this a KaneCLI entry. The portal shows a green 'Saved' toast — but a deliberately injected backend bug never writes the contact."
 
 **Show:**
-- Timeline: "Lodge complaint with your bank and get a reference"
-- Amount claimed: ₦20,000 (debited − dispensed)
-- "What happens next?" panel lists the bank-first steps
+1. Apply an approved correction on FS7777 → green "Saved" toast appears.
+2. **But** Kane reloads the booking in a fresh page and reads the contact afresh → still the OLD value.
+3. Kane returns **FAILURE**. The deception is caught.
 
-**Key point:** Bank-first. No CBN escalation button yet. Two-week window not elapsed.
+**Then the fix:**
+- Coding agent reads Kane's failure evidence, fixes the persistence path.
+- Rerun the same journey → Kane reloads, finds the new contact persisted → **PASS**.
 
----
-
-## Minute 2:30–3:00 — MockBankDesk sandbox (simulated bank portal)
-
-**Open:** `http://localhost:3000/sandbox/bankdesk`
-
-**Say:** "This is a clearly labelled sandbox — not a real bank. It simulates the bank's complaint portal."
-
-**Actions:**
-1. Submit a complaint (same facts)
-2. Show: "Complaint registered — Reference BD-XXXX-XXXX"
-3. Submit the SAME complaint again → shows "Duplicate — existing case returned, same reference" (idempotent)
-4. Look up by reference → case found
-
-**Say:** "One complaint, one reference, no duplicates. Idempotent."
+**Say:** "No green toast accepted as proof. Kane verifies the business outcome, not just that a page loaded."
 
 ---
 
-## Minute 3:00–3:45 — Killer demo: deceptive success caught by Kane
+## 2:30–3:00 — Independent proof (read-back)
 
-**Open:** `http://localhost:3000/sandbox/bankdesk` with `NEXT_PUBLIC_SEED_BUG=true`
+**Return to BY5678 after the fix.** Kane reopens the booking. P1 has P1's contact, P2 has P2's contact. No cross-assignment. PAXREACH issues the evidence receipt: before/after digest, timestamp, masked contacts, passenger association, Kane evidence reference.
 
-**Say:** "Here's the killer demo. We seed a bug: the frontend shows 'Complaint submitted' but the backend never creates the case."
-
-**Actions:**
-1. Submit a complaint → green "Complaint submitted" toast appears
-2. **But** Kane reopens the reference/status journey → looks up the reference → finds NO case
-3. Kane FAILS. The deception is caught.
-
-**Then (the fix):**
-- Switch `NEXT_PUBLIC_SEED_BUG=false`, rebuild
-- Resubmit → real case persisted, real reference issued
-- Kane re-verifies → PASSES
-
-**Say:** "This is the agent → Kane → agent closed loop. Kane catches the bug. The agent fixes persistence. Kane re-verifies a real persisted case."
+**Say:** "The booking record now contains each passenger's own contact. Independently verified."
 
 ---
 
-## Minute 3:45–4:30 — CCMS 24-hour check and CBN two-week window
+## 3:00–3:30 — Refusal handling (CTCR)
 
-**Open:** `http://localhost:3000/sandbox/ccms`
+**Open:** CZ9012 · IBRAHIM (passenger declined contact).
 
-**Actions:**
-1. Look up the bank reference BEFORE 24h → "Complaint not yet uploaded by bank" (24h delay)
-2. Advance demo clock +1 day → "Complaint uploaded to CCMS. Status available."
+**Show:** PAXREACH shows CTCR — passenger declined. PAXREACH preserves the refusal and does NOT write any contact. Explains the consequence (passenger relies on the agent for updates).
 
-**Back on incident page:**
-1. Advance demo clock +14 days
-2. Status reaches ELIGIBLE_FOR_CBN_ESCALATION
-3. CBN escalation button now enabled
-4. Escalation packet includes bank reference + proof of initial complaint
-
-**Say:** "24-hour CCMS upload check, then two-week bank window. CBN escalation only after both. Exactly as CBN guidance says."
+**Say:** "A passenger's refusal is respected. We never override it."
 
 ---
 
-## Minute 4:30–5:00 — Closing
+## 3:30–4:00 — Honest boundary
 
-**Show:**
-- Persisted case record survives refresh
-- Official-source links (CBN Lodge a Complaint, CCMS portal)
-- "What happens next?" summary
-- Data minimisation: no PIN, OTP, BVN, full card number collected
+**Show:** The "already correct" booking (DX3456) — no unnecessary write, PASS retained.
 
-**Say:** "CashCase: evidence-checked bank complaint, correctly timed CBN escalation, independently browser-verified. Bank-first. Consumer-owned."
+**Say:** "This prototype proves the booking contact record in a reproducible, clearly labelled sandbox. We do not claim live airline integration or guaranteed delivery of future messages. Live carrier coverage requires a tested adapter."
 
 ---
 
@@ -122,11 +87,11 @@
 
 | Segment | Time |
 |---|---|
-| The moment / problem | 0:30 |
-| Incident intake + evidence | 1:00 |
-| Bank-first route | 1:00 |
-| MockBankDesk sandbox + idempotency | 0:30 |
-| Deceptive-success killer demo | 0:45 |
-| CCMS 24h + CBN 2-week | 0:45 |
-| Closing | 0:30 |
-| **Total** | **~5:00** |
+| The real failure / problem | 0:20 |
+| The failure (misassigned contact) | 0:35 |
+| The repair (consent + correction) | 0:50 |
+| Drey moment: false save caught by Kane | 0:45 |
+| Independent proof / receipt | 0:30 |
+| Refusal handling (CTCR) | 0:30 |
+| Honest boundary / close | 0:30 |
+| **Total** | **~4:00** |

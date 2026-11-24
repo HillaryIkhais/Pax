@@ -1,95 +1,115 @@
-# CashCase
+# PAXREACH — Can the airline reach you?
 
-When an ATM debits your account but dispenses no cash, CashCase turns the incident into a complete, evidence-checked bank complaint and a correctly timed CBN escalation path — then verifies each browser submission actually became a case.
+When a flight is booked through a travel agent, the agent sometimes puts their own phone number and email into the airline booking record (PNR). The airline's operational updates (delay, cancellation, schedule change) reach the agent — **not the passenger**. The passenger arrives at the airport unaware of the disruption.
 
-**Nigerian consumer problem.** You withdraw ₦20,000. Your account is debited. The ATM dispenses nothing (or partial cash). CashCase guides you through one guided incident in under two minutes: what details to preserve, what to send your bank, and exactly when CBN escalation becomes available.
+PAXREACH checks whether the airline's booking record actually contains the **passenger's own** verified contact details — and helps correct the record when it does not.
 
-**Bank-first, per CBN guidance.** Lodge with your financial institution first, get a reference/tracking number, wait two weeks before CBN escalation. Allow 24 hours for the bank to upload to CCMS, then check the portal.
+## One-line promise
 
-## Screenshots / one screen
+Passenger identity → verify contact association → obtain consent → correct the record → independently read it back. PAXREACH proves the booking record contains the right passenger contact, independently verified with Kane CLI.
 
-- **Top:** "ATM debited you, but no cash came out?"
-- **Left/primary:** incident facts + evidence checklist
-- **Right/timeline:** next required action, deadline, reference, status
-- **"What happens next?"** summary
+## The problem (real, documented)
 
-## Official sources (never LLM-invented)
+On 27 May 2026, Nigeria's civil aviation authority warned that passengers arrived at Abuja airport unaware their flights had been disrupted because travel agents used their own contact details in PNRs.
 
-- CBN Lodge a Complaint: https://www.cbn.gov.ng/FinInc/FinLit/LodgeComplaint.html
-- CBN Complaint Management: https://www.cbn.gov.ng/supervision/cpdcomgt.html
-- CBN CCMS Portal: https://complaintsportal.cbn.gov.ng/
-- CBN CCMS Categories: https://complaintsportal.cbn.gov.ng/Categories
-- FirstBank complaints (informational): https://complaints.firstbanknigeria.com/
+Sources:
+- https://www.premiumtimesng.com/business/business-news/883203-how-poor-communication-from-travel-agents-leaves-air-passengers-stranded-official.html
+- https://portal.iata.org/faq/articles/en_US/FAQ/Are-airlines-storing-the-passengers-contacts-1448977354286/
 
-See `SOURCES.md` for the full rule/source registry with excerpts and applicability.
+## What PAXREACH does
 
-## What we do NOT do
+1. Retrieve a PNR booking record (Carrier Sandbox for reproducible demos).
+2. Read and normalise the contact SSRs: **CTCE** (email), **CTCM** (mobile), **CTCR** (declined).
+3. Compare each adult passenger's verified contact against the SSR attached to **that passenger's reference** — never infer ownership from name or mere presence.
+4. Show the exact discrepancy (agent-only contact, misassigned contact, missing channel, declined).
+5. Require explicit passenger consent before writing any contact detail.
+6. Apply the approved correction, reload the PNR in a fresh read, and verify the values persisted.
+7. Issue an evidence receipt (before/after digest, timestamps, masked contacts, Kane evidence reference).
 
-- Do not replace the CBN CCMS portal or any bank channel.
-- Do not send real complaints to a bank or CBN (sandbox only).
-- Do not collect PIN, OTP, BVN, full card number, password, or online-banking credentials.
-- Do not claim a universal 72-hour ATM resolution rule (no official source).
-- Not a GuardianKane-style dev extension, escape room, demo recorder, or generic test runner.
+## This is not a flight tracker
 
-## Quick start (5 minutes or less)
+TripIt and CheckMyTrip monitor/display itineraries. Neither audits or repairs the passenger contact details stored in the airline PNR. PAXREACH's missing primitive is passenger-level PNR contact assurance.
+
+## The Drey moment (Kane CLI closed loop)
+
+1. Kane opens a booking with the wrong passenger contact.
+2. PAXREACH proposes a correction; the passenger approves it.
+3. The portal shows a green `Saved` toast — but a deliberately injected backend bug prevents persistence.
+4. Kane reloads the booking and discovers the contact was **never saved**.
+5. The coding agent reads Kane's actual failure evidence, fixes the persistence path, reruns Kane.
+6. Kane reopens the booking and verifies the corrected contact against the right passenger.
+
+No green toast accepted as proof. No LLM declaring itself successful.
+
+## Stack
+
+- Next.js 16 + TypeScript (App Router)
+- SQLite (local demo state, no managed DB)
+- Drizzle ORM + Zod (schema/validation)
+- libphonenumber-js (phone normalisation, E.164)
+- Tailwind CSS (mobile-first, accessible contrast)
+- Kane CLI (independent real-browser verifier)
+
+No paid APIs, no frontier model required, no real airline integration claimed.
+
+## Quick start
 
 ### Prerequisites
 - Node.js 18+
 - Google Chrome (required for Kane CLI)
 
-### 1. Install dependencies
+### Install & run
 
 ```bash
 npm install
+npx tsx src/scripts/seed.ts     # seed the Carrier Sandbox (5 demo PNRs)
+npm run dev                     # open http://localhost:3000
 ```
 
-### 2. Run the dev server
+### Seeded demo bookings (Carrier Sandbox — clearly labelled, not a live airline)
+
+| PNR | Surname | Scenario |
+|-----|---------|----------|
+| AX1234 | OKONKWO | Agent-only contact (agency email/phone) |
+| BY5678 | ADEBAYO | Contact on wrong passenger (two adults) |
+| CZ9012 | IBRAHIM | Passenger declined contact (CTCR) |
+| DX3456 | SANUSI | Already correct (no change needed) |
+| FS7777 | FALSE | False-save bug demo (Kane catches it) |
+
+### Run unit tests
 
 ```bash
-npm run dev
-# open http://localhost:3000
+npx vitest run   # 9 passed, 0 failed
 ```
 
-### 3. Run unit tests
-
-```bash
-npx vitest run
-# 21 passed, 0 failed
-```
-
-### 4. Run the app
-
-- `http://localhost:3000` — CashCase incident intake (mobile-first)
-- `http://localhost:3000/sandbox/bankdesk` — MockBankDesk sandbox bank portal
-- `http://localhost:3000/sandbox/ccms` — MockCCMS sandbox regulator lookup
-
-### 5. Build
+### Build
 
 ```bash
 npm run build
 ```
 
-## Demo clock / time-travel
-
-On both the incident page and MockCCMS you can advance the demo clock by days (+1 day = CCMS 24h upload; +14 days = CBN two-week window) without waiting. This is for demo only.
-
 ## Kane CLI verification
 
-Kane CLI (TestMu AI) runs real-browser end-to-end flows and returns pass/fail.
+Kane CLI (TestMu AI) runs real-browser flows and returns pass/fail. It is central to PAXREACH, not an afterthought.
 
-**Install:**
+### Install
+
 ```bash
 npm install -g @testmuai/kane-cli
 kane-cli --version   # 0.10.8
 ```
 
-**Authenticate (required):**
+### Authenticate (required for scored runs)
+
 ```bash
-kane-cli login --oauth      # or --username <user> --access-key <key>
+kane-cli login --oauth          # or --username <user> --access-key <key>
 kane-cli whoami
 ```
 
-**Run a flow:**
+Register on TestMu AI with the same email used for event registration and claim the 10,000 free credits. Running at least one Kane CLI flow is required to be scored.
+
+### Run a flow
+
 ```bash
 kane-cli run "<objective>" --url http://localhost:3000 --headless
 ```
@@ -98,80 +118,50 @@ Exit codes: 0 = passed, 1 = failed, 2 = error, 3 = timeout/cancelled.
 
 Structured NDJSON for AI coding agents: add `--agent`.
 
-### Kane test files
+### Verification script
 
-`tests/kane/*.md` — natural-language browser test objectives:
-
-| File | What it verifies |
-|---|---|
-| `01-full-case-creation.md` | Full case creation → status → bank-first → no premature CBN |
-| `02-false-success-bug.md` | Seeded deceptive-success bug — Kane FAILS (no case persisted) |
-| `03-duplicate-submit.md` | Duplicate submit → one case (idempotent) |
-| `04-premature-cbn-escalation.md` | CBN escalation blocked before two-week window |
-| `05-missing-evidence-blocks.md` | Missing evidence blocks READY_FOR_BANK |
-| `06-refresh-persisted-state.md` | Refresh/reopen shows same persisted state |
-
-### Closed loop (agent → Kane → agent)
-
-1. Agent implements a milestone.
-2. Agent invokes `kane-cli run "..." --url ...` on the real browser.
-3. Kane returns evidence + pass/fail.
-4. Agent reads the failure, changes the implementation, reruns Kane.
-5. Passing result tied to build/revision, stored with run evidence.
-
-### Seeded bug (killer demonstration)
-
-MockBankDesk has `NEXT_PUBLIC_SEED_BUG`:
-- `true` — frontend shows "Complaint submitted" but backend never creates the case. Kane reopens the reference/status journey, finds no case → **FAIL**.
-- `false` (after fix) — backend persists a real case + reference. Kane verifies → **PASS**.
-
-This is the moment: Kane catches the deception, the agent fixes persistence, Kane re-verifies.
-
-## Tech stack
-
-- TypeScript + Next.js 16 App Router
-- Tailwind CSS (mobile-first, accessible contrast)
-- SQLite + Drizzle ORM (local reproducibility)
-- Zod schemas for all inputs and state transitions
-- lucide-react icons
-
-## Data model (state machine)
-
-```
-DRAFT → EVIDENCE_INCOMPLETE → READY_FOR_BANK → BANK_COMPLAINT_SUBMITTED →
-BANK_REFERENCE_RECORDED → WAITING_FOR_CCMS_UPLOAD → BANK_RESOLUTION_WINDOW →
-ELIGIBLE_FOR_CBN_ESCALATION → CBN_ESCALATION_PREPARED → RESOLVED / DISPUTED
+```bash
+node scripts/kane-verify.mjs agencyOnly
+# Scenarios: agencyOnly, misassigned, declined, alreadyCorrect, falseSave
 ```
 
-Timestamps stored in UTC (epoch ms), displayed in WAT (UTC+1). All deadline math is DST-independent.
+The script:
+1. Writes seeded PNR variables to `.testmuai/variables/paxreach-demo.json`
+2. Runs `kane-cli run "..." --url ... --variables-file ... --agent --final-validation on --mode action --headless`
+3. Captures NDJSON + exit code, saves raw evidence to `.testmuai/evidence/`
+4. On `falseSave`, Kane returns failure (contact absent after reload)
 
-## Evidence handling
+### Kane test objectives (docs)
 
-- Evidence files stored under `data/evidence/<caseId>/` (not public paths).
-- Each attachment hashed (SHA-256); hash + metadata recorded.
-- Replaced files create a new evidence version (incrementing version number).
-- Never expose private uploads to public paths.
+`docs/kane-scenarios.md` documents the natural-language objectives for each seeded scenario.
 
-## Threat model
+## Data model
 
-| Threat | Mitigation |
-|---|---|
-| Real customer data collected | No PIN/OTP/BVN/full card/password fields; account numbers masked |
-| Evidence tampering | SHA-256 hash recorded per version; originals retained |
-| Premature CBN escalation | State machine blocks transition before two-week window |
-| False success claims | Submission requires persisted case + reference; Kane verifies |
-| Duplicate complaints | MockBankDesk duplicate detection by bank+amount+datetime |
+Normalised SSR representation:
+- `type`: CTCE | CTCM | CTCR
+- `passengerRef`: P1, P2, ...
+- `segmentRef` (optional)
+- `value`, `sourceRecordId`, `rawSourceText`, `observedAt`
+
+Audit verdicts: PASSENGER_CONTACT_MATCH, AGENCY_CONTACT_ONLY, MISSING_EMAIL, MISSING_MOBILE, MISASSIGNED_TO_OTHER_PASSENGER, MALFORMED_CONTACT, PASSENGER_DECLINED, RECORD_NOT_EXPOSED, UNKNOWN.
+
+## Evidence & data minimisation
+
+- Verified contacts are held in memory for the session; never emailed/SMS'd via a paid API.
+- Contact values are masked in the UI and receipts (e.g. `b•••••s@okonkwo-travels.ng`, `••••0000`).
+- No PNR, surname, phone, email, or access token is written to application logs or Git.
+- The demo OTP/verification is clearly labelled local simulation — not a production identity service.
 
 ## Known limitations
 
-- Kane CLI browser flows require TestMu AI authentication (register on TestMu AI, claim credits, run `kane-cli login`).
-- Sandbox sites (MockBankDesk, MockCCMS) are clearly labelled local simulations, not connected to any bank or CBN.
-- No real complaints are sent to any bank or CBN.
+- The reproducible demo uses a clearly labelled Carrier Sandbox. We do not claim live airline integration or guaranteed delivery of future airline messages.
+- Kane CLI browser flows require TestMu AI authentication (`kane-cli login`).
+- Automated updates to a real carrier Manage Booking page require a tested carrier adapter; otherwise the official Manage Booking link is provided and automated update is marked unsupported.
 
 ## Submission assets
 
-- `PRODUCT_SPEC.md` — product specification
+- `PRODUCT_SPEC.md` — full product specification
 - `SOURCES.md` — rule/source registry
 - `DEMO_SCRIPT.md` — 3–5 minute demo walkthrough
 - `TEST_REPORT.md` — real test + Kane evidence
-- `tests/kane/*.md` — Kane browser test objectives
+- `docs/kane-scenarios.md` — Kane scenario objectives

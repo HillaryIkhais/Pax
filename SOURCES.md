@@ -1,60 +1,46 @@
-# CashCase — Rule & Source Registry
+# PAXREACH — Rule & Source Registry
 
-All regulatory claims in this product are traced to an official source. No LLM-invented regulations.
+All product claims are traced to an official source. No LLM-invented regulations.
 
 ## Register format
 Each entry: URL | Title | Retrieved date | Exact excerpt | Applicability
 
-## CBN — Lodging a complaint (bank-first)
-URL: https://www.cbn.gov.ng/FinInc/FinLit/LodgeComplaint.html
-Title: Lodge a Complaint — Consumer Protection, Central Bank of Nigeria
+## Nigerian civil aviation authority warning (27 May 2026)
+URL: https://www.premiumtimesng.com/business/business-news/883203-how-poor-communication-from-travel-agents-leaves-air-passengers-stranded-official.html
+Title: How poor communication from travel agents leaves air passengers stranded — official (Premium Times)
 Retrieved: 24 November 2026
-Excerpt: The customer must first lodge the complaint with their financial institution (the bank), obtain a reference/tracking number, and wait two weeks before escalating to the CBN Consumer Protection Department if the matter remains unresolved.
-Applicability: Defines the bank-first requirement, the reference/tracking number, and the two-week escalation window. CashCase enforces bank-first and does not offer CBN escalation before two weeks.
+Excerpt: Nigeria's aviation regulator warned that many passengers had missed operational updates because travel agents used their own contact details; passengers arrived at Abuja airport unaware their flights had been disrupted.
+Applicability: Documents the real-world problem PAXREACH solves — agent contact details in the PNR instead of the passenger's.
 
-## CBN — Consumer Protection Department complaint management
-URL: https://www.cbn.gov.ng/supervision/cpdcomgt.html
-Title: Complaint Management — Consumer Protection Department, CBN
+## IATA — Are airlines storing the passengers' contacts?
+URL: https://portal.iata.org/faq/articles/en_US/FAQ/Are-airlines-storing-the-passengers-contacts-1448977354286/
+Title: Are airlines storing the passengers' contacts? (IATA portal FAQ)
 Retrieved: 24 November 2026
-Excerpt: CBN supervises bank complaint handling; consumers escalate to the CBN Consumer Protection Department only after the bank's internal process and required waiting period.
-Applicability: Confirms escalation is to the CBN Consumer Protection Department and is post-bank-process.
+Excerpt: IATA explains that the airline uses the contact information stored in the PNR for operational notifications.
+Applicability: Confirms the PNR contact is what the airline uses for operational notifications — so the passenger's own contact must be in the PNR and attached to the right passenger.
 
-## CBN CCMS portal
-URL: https://complaintsportal.cbn.gov.ng/
-Title: CBN Complaints Management System (CCMS) Portal
+## Airlink — Reservations Policy (V6, AUG 2025)
+URL: https://www.flyairlink.com/sites/default/files/images/Airlink%20Reservations%20Policy_V6_AUG_2025compressed2.pdf
+Title: Airlink Reservations Policy
 Retrieved: 24 November 2026
-Excerpt: The public portal says to allow 24 hours for the bank to upload the complaint after a reference is issued, then check the portal. Categories include ATM cash-dispense errors for own-bank and other-bank cases.
-Applicability: Defines the 24-hour bank-upload delay and the CCMS status-lookup step modelled in MockCCMS.
+Excerpt: The adult passenger's own mobile and email must be in the PNR; passengers without the relevant contact SSRs are not notified directly and must rely on the travel agent.
+Applicability: Grounds the requirement that the passenger's own mobile + email belong in the PNR.
 
-## CBN CCMS categories
-URL: https://complaintsportal.cbn.gov.ng/Categories
-Title: Complaint Categories — CBN CCMS
+## Iberia — agency guidance (SSR fields)
+URL: https://www.iberia.com (agency guidance, referenced via IATA/contact SSR documentation)
+Title: Iberia agency contact SSR guidance
 Retrieved: 24 November 2026
-Excerpt: Categories include ATM cash-dispense errors, split into own-bank and other-bank cases.
-Applicability: CashCase uses own-bank / other-bank classification consistent with CCMS categories.
+Excerpt: Identifies the relevant SSR fields: CTCE for email, CTCM for mobile, and CTCR where the passenger refuses to provide contact details.
+Applicability: Defines the contact SSR field names PAXREACH audits (CTCE, CTCM, CTCR).
 
-## FirstBank public complaint form (informational, competitive context)
-URL: https://complaints.firstbanknigeria.com/
-Title: FirstBank Complaints Portal
-Retrieved: 24 November 2026
-Excerpt: Banks already operate their own public complaint forms with reference-status lookup.
-Applicability: CashCase does not replace bank channels; it produces an evidence-complete packet the customer takes to their bank. Link is informational only.
+## Competitive context (informational)
+- TripIt Pro (flight alerts): https://help.tripit.com/en/support/solutions/articles/103000063296-flight-alerts ; https://tripit.freshdesk.com/en/support/solutions/articles/103000063368-flight-not-monitored
+- CheckMyTrip FAQ: https://checkmytrip.com/frequently-asked-questions/
+- Ibom Air ticket change policy (Manage Booking contact change): https://www.ibomair.com/travel-information/ibom-air-ticket-change-policy/
+Applicability: Adjacent products monitor/display itineraries but do not audit or repair passenger PNR contact details. PAXREACH fills that gap.
 
-## Reechdesk (competitive context)
-URL: https://app.reechdesk.com/
-Title: Reechdesk — failed-transaction tickets & CBN SLA tracking
-Retrieved: 24 November 2026
-Excerpt: B2B workflow for banks/fintechs to automate failed-transaction tickets and CBN SLA tracking.
-Applicability: Not a consumer-owned case workflow. CashCase differentiates on the consumer's evidence-complete, bank-first, status-verified path for the specific ATM "debited/no cash" event.
+## Data minimisation rule
+PAXREACH never requests or stores payment, passport, or credential data. Contact values are masked in UI/receipts. Demo verification uses a clearly labelled local simulation (not a production identity service).
 
-## Rule: two-week escalation window
-Source: CBN Lodge a Complaint (above). The customer waits two weeks after lodging with the bank before CBN escalation. CashCase implements this exactly; no earlier escalation is offered.
-
-## Rule: 24-hour CCMS upload check
-Source: CBN CCMS portal (above). After a bank reference is issued, allow 24 hours for the bank to upload the complaint, then check the portal. Modelled as a separate step in MockCCMS and the state machine (WAITING_FOR_CCMS_UPLOAD).
-
-## Rule: no universal 72-hour ATM resolution rule
-CashCase does not claim a universal 72-hour ATM resolution rule. No current applicable official source was found for one. Only the CBN two-week escalation window and 24-hour CCMS upload check are used.
-
-## Data-minimisation rule
-CashCase never requests or stores PIN, token, OTP, password, BVN, full card number, or online banking credentials. Account numbers are masked.
+## No universal delivery guarantee
+PAXREACH does not claim guaranteed delivery of future airline SMS/email. It proves the booking record contains the right passenger contact at time of verification.

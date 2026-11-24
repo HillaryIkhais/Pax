@@ -3,154 +3,127 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
 /* ------------------------------------------------------------------ */
-/* Cases                                                              */
+/* PNR records (sandbox carrier records)                              */
 /* ------------------------------------------------------------------ */
 
-export const cases = sqliteTable("cases", {
+export const pnrs = sqliteTable("pnrs", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  pnr: text("pnr").notNull().unique(), // booking reference
+  surname: text("surname").notNull(),
+  airline: text("airline").notNull(),
+  flightDate: text("flight_date"),
+  sourceRecordId: text("source_record_id"), // carrier system record id
+  rawPayload: text("raw_payload"), // verbatim JSON/text observed
   createdAt: integer("created_at").notNull(),
   updatedAt: integer("updated_at").notNull(),
-
-  // Incident facts
-  atmType: text("atm_type", { enum: ["own", "other"] }).notNull(), // own-bank or other-bank ATM
-  bankName: text("bank_name").notNull(),
-  transactionDateTime: text("transaction_date_time").notNull(), // ISO string
-  timezone: text("timezone").notNull().default("Africa/Lagos"),
-  amountDebited: real("amount_debited").notNull(),
-  amountDispensed: real("amount_dispensed").notNull().default(0),
-  atmLocation: text("atm_location").notNull(),
-  atmOperator: text("atm_operator"),
-  terminalId: text("terminal_id"),
-  transactionReference: text("transaction_reference"),
-
-  // Complaint references
-  bankComplaintReference: text("bank_complaint_reference"), // reference issued by the bank after lodging
-  ccmsReference: text("ccms_reference"),
-
-  // Evidence
-  evidenceAlertUrl: text("evidence_alert_url"), // local path/hash reference
-  evidenceReceiptUrl: text("evidence_receipt_url"), // optional
-  evidenceHash: text("evidence_hash"), // sha256 of primary attachment
-  evidenceVersion: integer("evidence_version").notNull().default(1),
-
-  // State machine
-  status: text("status").notNull().default("DRAFT"),
-
-  // Time-travel / demo clock overrides (stored as epoch ms; null = use real time)
-  demoClockOverride: integer("demo_clock_override"),
-
-  // Security: explicitly null — we never store these
-  // pin, otp, bvn, fullCardNumber are intentionally absent from this schema
 });
 
-export const caseStates = [
-  "DRAFT",
-  "EVIDENCE_INCOMPLETE",
-  "READY_FOR_BANK",
-  "BANK_COMPLAINT_SUBMITTED",
-  "BANK_REFERENCE_RECORDED",
-  "WAITING_FOR_CCMS_UPLOAD",
-  "BANK_RESOLUTION_WINDOW",
-  "ELIGIBLE_FOR_CBN_ESCALATION",
-  "CBN_ESCALATION_PREPARED",
-  "RESOLVED",
-  "DISPUTED",
-] as const;
-
-export type CaseStatus = (typeof caseStates)[number];
-
 /* ------------------------------------------------------------------ */
-/* Evidence versions                                                  */
+/* Contact SSRs observed on a PNR                                     */
 /* ------------------------------------------------------------------ */
 
-export const evidenceVersions = sqliteTable("evidence_versions", {
+export const contactSsrs = sqliteTable("contact_ssrs", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
-  caseId: text("case_id").notNull().references(() => cases.id),
-  version: integer("version").notNull(),
-  field: text("field").notNull(), // e.g. "evidence_alert", "evidence_receipt"
-  sourceUrl: text("source_url").notNull(), // local storage path
-  hash: text("hash").notNull(), // sha256 of the stored file
-  size: integer("size").notNull(),
-  page: text("page"), // source page if available
-  region: text("region"), // source region if available
-  extractedValue: text("extracted_value"), // user-confirmed or suggested value
+  pnrId: text("pnr_id").notNull().references(() => pnrs.id),
+  type: text("type", { enum: ["CTCE", "CTCM", "CTCR"] }).notNull(),
+  passengerRef: text("passenger_ref").notNull(), // P1, P2 ...
+  segmentRef: text("segment_ref"),
+  value: text("value"), // email / phone; null for CTCR
+  sourceRecordId: text("source_record_id"),
+  rawSourceText: text("raw_source_text").notNull(),
+  observedAt: integer("observed_at").notNull(),
+});
+
+/* ------------------------------------------------------------------ */
+/* Passenger verified contacts (entered by passenger, local only)     */
+/* ------------------------------------------------------------------ */
+
+export const verifiedContacts = sqliteTable("verified_contacts", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  sessionId: text("session_id").notNull(),
+  passengerRef: text("passenger_ref").notNull(),
+  email: text("email"), // normalised
+  phone: text("phone"), // normalised E.164
+  declined: integer("declined", { mode: "boolean" }).notNull().default(false),
+  emailVerified: integer("email_verified", { mode: "boolean" }).notNull().default(false),
+  phoneVerified: integer("phone_verified", { mode: "boolean" }).notNull().default(false),
+  createdAt: integer("created_at").notNull(),
+  updatedAt: integer("updated_at").notNull(),
+});
+
+/* ------------------------------------------------------------------ */
+/* Audit results                                                      */
+/* ------------------------------------------------------------------ */
+
+export const auditResults = sqliteTable("audit_results", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  sessionId: text("session_id").notNull(),
+  pnr: text("pnr").notNull(),
+  surname: text("surname").notNull(),
+  overall: text("overall").notNull(), // REACHABLE | NOT_REACHABLE | UNVERIFIABLE | DECLINED
+  rawSsrs: text("raw_ssrs").notNull(), // JSON
+  passengers: text("passengers").notNull(), // JSON
   createdAt: integer("created_at").notNull(),
 });
 
 /* ------------------------------------------------------------------ */
-/* State transitions (audit trail)                                    */
+/* Repair / consent records                                           */
 /* ------------------------------------------------------------------ */
 
-export const stateTransitions = sqliteTable("state_transitions", {
+export const repairs = sqliteTable("repairs", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
-  caseId: text("case_id").notNull().references(() => cases.id),
-  fromStatus: text("from_status").notNull(),
-  toStatus: text("to_status").notNull(),
-  reason: text("reason"),
-  actor: text("actor").notNull().default("system"), // system | user | kane
+  sessionId: text("session_id").notNull(),
+  pnr: text("pnr").notNull(),
+  passengerRef: text("passenger_ref").notNull(),
+  ssrType: text("ssr_type", { enum: ["CTCE", "CTCM", "CTCR"] }).notNull(),
+  value: text("value"),
+  approved: integer("approved", { mode: "boolean" }).notNull().default(false),
+  persisted: integer("persisted", { mode: "boolean" }).notNull().default(false),
+  beforeDigest: text("before_digest"),
+  afterDigest: text("after_digest"),
   createdAt: integer("created_at").notNull(),
+  updatedAt: integer("updated_at").notNull(),
 });
 
 /* ------------------------------------------------------------------ */
 /* Zod schemas                                                        */
 /* ------------------------------------------------------------------ */
 
-export const insertCaseSchema = z
-  .object({
-    atmType: z.enum(["own", "other"]),
-    bankName: z.string().min(1, "Bank name is required"),
-    transactionDateTime: z.string().min(1, "Transaction date/time is required"),
-    timezone: z.string().min(1),
-    amountDebited: z.coerce.number().positive("Amount debited must be positive"),
-    amountDispensed: z.coerce.number().nonnegative("Amount dispensed cannot be negative").default(0),
-    atmLocation: z.string().min(1, "ATM location is required"),
-    atmOperator: z.string().optional(),
-    terminalId: z.string().optional(),
-    transactionReference: z.string().optional(),
-    evidenceVersion: z.coerce.number().int().nonnegative().default(1),
-  })
-  .strict();
+export const insertPnrSchema = createInsertSchema(pnrs, {
+  pnr: z.string().min(1),
+  surname: z.string().min(1),
+  airline: z.string().min(1),
+}).omit({ id: true, createdAt: true, updatedAt: true });
 
-export const selectCaseSchema = createSelectSchema(cases);
+export const insertSsrSchema = createInsertSchema(contactSsrs, {
+  type: z.enum(["CTCE", "CTCM", "CTCR"]),
+  passengerRef: z.string().min(1),
+  value: z.string().optional(),
+  rawSourceText: z.string().min(1),
+}).omit({ id: true, pnrId: true, observedAt: true });
 
-export const transitionSchema = z.object({
-  caseId: z.string().uuid(),
-  toStatus: z.enum(caseStates),
-  reason: z.string().optional(),
-  actor: z.enum(["system", "user", "kane"]).default("system"),
+export const verifiedContactSchema = z.object({
+  sessionId: z.string().min(1),
+  passengerRef: z.string().min(1),
+  email: z.string().email().optional().nullable(),
+  phone: z.string().min(1).optional().nullable(),
+  declined: z.boolean().default(false),
+  emailVerified: z.boolean().default(false),
+  phoneVerified: z.boolean().default(false),
 });
 
-export const evidenceUploadSchema = z.object({
-  caseId: z.string().uuid(),
-  field: z.enum(["evidence_alert", "evidence_receipt"]),
-  sourceUrl: z.string(),
-  hash: z.string(),
-  size: z.number().int().nonnegative(),
-  page: z.string().optional(),
-  region: z.string().optional(),
-  extractedValue: z.string().optional(),
+export const repairSchema = z.object({
+  sessionId: z.string().min(1),
+  pnr: z.string().min(1),
+  passengerRef: z.string().min(1),
+  ssrType: z.enum(["CTCE", "CTCM", "CTCR"]),
+  value: z.string().optional().nullable(),
+  approved: z.boolean().default(false),
 });
 
-/* ------------------------------------------------------------------ */
-/* Security: fields that must NEVER be accepted or logged             */
-/* ------------------------------------------------------------------ */
-
-export const FORBIDDEN_FIELDS = [
-  "pin",
-  "otp",
-  "bvn",
-  "fullCardNumber",
-  "password",
-  "token",
-] as const;
-
-export type ForbiddenField = (typeof FORBIDDEN_FIELDS)[number];
-
-/* ------------------------------------------------------------------ */
-/* Types                                                              */
-/* ------------------------------------------------------------------ */
-
-export type NewCase = typeof cases.$inferInsert;
-export type Case = typeof cases.$inferSelect;
-export type NewEvidenceVersion = typeof evidenceVersions.$inferInsert;
-export type NewStateTransition = typeof stateTransitions.$inferInsert;
+export type NewPnr = typeof pnrs.$inferInsert;
+export type Pnr = typeof pnrs.$inferSelect;
+export type NewSsr = typeof contactSsrs.$inferInsert;
+export type Ssr = typeof contactSsrs.$inferSelect;
+export type NewAuditResult = typeof auditResults.$inferInsert;
+export type NewRepair = typeof repairs.$inferInsert;

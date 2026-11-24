@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "CashCase — ATM debited, no cash",
+  title: "PAXREACH — Can the airline reach you?",
   description:
-    "Evidence-checked bank complaint and correctly timed CBN escalation for ATM cash-dispense errors. Bank-first, status-verified.",
+    "Verify that your airline booking record contains your own contact details. Passenger-level PNR contact assurance, independently verified.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -1,131 +1,109 @@
-# CashCase — Product Spec
+# PAXREACH — Product Spec
 
 ## One sentence
-When an ATM debits a customer's account but dispenses no cash, CashCase turns the incident into a complete, evidence-checked bank complaint and a correctly timed escalation path — then independently verifies that each browser submission actually became a case.
+When a flight is booked through a travel agent, PAXREACH checks whether the airline's booking record contains the passenger's own verified contact details for operational updates — and helps correct the record when it does not.
 
-## Problem
-A customer withdraws ₦20,000 from an ATM. The account is debited. The ATM dispenses nothing (or partial cash). The customer is standing there, stressed, and does not know which details or proof to preserve, what to send the bank, or when CBN escalation becomes available.
+## Problem (documented, real)
+A passenger books through a travel agent. The agent puts their own phone/email in the PNR. Airline operational updates (delay, cancellation, schedule change) reach the agent, not the passenger. The passenger arrives at the airport unaware of the disruption.
 
-## Target user & moment
-Nigerian bank customers at the ATM, in the first minutes after a failed dispense. Guided incident intake in under two minutes. Mobile-first.
-
-## Regulatory basis (CBN, Nigeria)
-- Customer must first lodge the complaint with their financial institution and obtain a reference/tracking number.
-- Wait two weeks before escalating to the CBN Consumer Protection Department if unresolved.
-- CBN CCMS portal: allow 24 hours for the bank to upload the complaint after a reference is issued, then check the portal.
-- CCMS categories include ATM cash-dispense errors (own-bank and other-bank).
+On 27 May 2026, Nigeria's civil aviation authority warned passengers had missed operational updates because travel agents used their own contact details; passengers arrived at Abuja airport unaware their flights were disrupted.
 Sources:
-- https://www.cbn.gov.ng/FinInc/FinLit/LodgeComplaint.html
-- https://www.cbn.gov.ng/supervision/cpdcomgt.html
-- https://complaintsportal.cbn.gov.ng/
-- https://complaintsportal.cbn.gov.ng/Categories
+- https://www.premiumtimesng.com/business/business-news/883203-how-poor-communication-from-travel-agents-leaves-air-passengers-stranded-official.html
+- https://portal.iata.org/faq/articles/en_US/FAQ/Are-airlines-storing-the-passengers-contacts-1448977354286/
 
 ## What we are NOT
-- Not replacing the CBN CCMS portal or a bank's own channel.
-- Not a GuardianKane-style "agent says done, Kane checks it" dev extension.
-- Not a demo recorder, escape room, or generic website test runner.
-- Not claiming there are no alternatives. Differentiate on the consumer's evidence-complete, bank-first, status-verified path for the specific ATM "debited/no cash" event.
-- Never send a real complaint to a bank or CBN. Sandbox sites are clearly labelled mock/local.
+- Not a flight tracker (TripIt, CheckMyTrip monitor/display itineraries; they don't audit or repair PNR contact details).
+- Not a generic itinerary manager, booking verifier, chatbot, airline complaint portal, or QA dashboard.
+- Not claiming live airline coverage unless tested. Carrier Sandbox is clearly labelled local simulation.
+- Not claiming guaranteed delivery of future airline messages — only that the record contains the right passenger contact.
+
+## Target user & moment
+Passenger who booked via an agent, before/during travel, wants to confirm the airline can reach THEM directly. Guided flow in under two minutes.
+
+## Core primitive (non-negotiable)
+Verify passenger identity → verify contact association → obtain consent → correct the record → independently read it back.
+
+## Airline standard contact SSR fields
+- CTCE — email
+- CTCM — mobile
+- CTCR — passenger declined to provide contact
+Sources: IATA passenger contacts FAQ; carrier reservations policies (e.g. Airlink, Iberia agency guidance).
 
 ## Scope
 
-### A. Incident intake (mobile-first)
-Collect only:
-1. Own-bank ATM or other-bank ATM.
-2. Customer's bank name.
-3. Transaction date/time and timezone.
-4. Amount debited and amount actually dispensed (default zero; allow partial dispense).
-5. ATM location, operator/bank if known, terminal ID if available.
-6. Transaction reference if available.
-7. Bank complaint reference after the customer has lodged it.
-8. Evidence attachment: transaction alert or statement excerpt; optional receipt/photo.
+### A. Deterministic contact audit
+Normalised SSR representation: type, passengerRef, segmentRef (optional), value, sourceRecordId, rawSourceText, observedAt.
+Never infer a contact is the passenger's from the name or mere presence in the PNR. Compare actual CTCE/CTCM values to the passenger's separately verified values and check passenger association. Phone normalised to E.164 (libphonenumber-js); email lowercased/trimmed.
+Verdicts: PASSENGER_CONTACT_MATCH, AGENCY_CONTACT_ONLY, MISSING_EMAIL, MISSING_MOBILE, MISASSIGNED_TO_OTHER_PASSENGER, MALFORMED_CONTACT, PASSENGER_DECLINED, RECORD_NOT_EXPOSED, UNKNOWN.
 
-Security: Never request/store PIN, token, OTP, password, BVN, full card number, or online banking credentials. Mask account numbers. Evidence files stored locally; hash each original attachment; never expose private uploads to public paths.
+### B. Consent and contact ownership
+Passenger enters their own email/phone and proves control of each channel (demo uses clearly labelled local OTP, no paid SMS/email API).
+Plain-language consent statement before writing: passenger authorises sharing contact with the airline for operational notifications only. Not for marketing.
 
-### B. Evidence completeness engine
-- Show the precise missing items before a case is marked ready.
-- Do not infer terminal ID or transaction reference from thin air.
-- Allow manual corrections to OCR/extracted values.
-- Every extracted field retains its source attachment and page/region.
+### C. Repair and verification loop
+1. Retrieve PNR record in carrier portal/sandbox.
+2. Read + normalise passenger/contact records.
+3. Compare each adult passenger's expected contact vs CTCE/CTCM/CTCR.
+4. Show exact discrepancy + proposed correction.
+5. Require explicit user approval before writing.
+6. Apply only approved correction.
+7. Reload PNR in fresh browser session.
+8. Re-read PNR. Mark verified ONLY if persisted contact fields match verified details + correct passenger association.
+9. If fields masked/not exposed → UNVERIFIABLE; never infer success from a green toast.
+10. Generate evidence receipt: before/after digest, timestamp, masked contacts, passenger association, source page, screenshots, Kane evidence reference.
 
-### C. CBN-aligned case state machine
-DRAFT → EVIDENCE_INCOMPLETE → READY_FOR_BANK → BANK_COMPLAINT_SUBMITTED → BANK_REFERENCE_RECORDED → WAITING_FOR_CCMS_UPLOAD → BANK_RESOLUTION_WINDOW → ELIGIBLE_FOR_CBN_ESCALATION → CBN_ESCALATION_PREPARED → RESOLVED / DISPUTED.
+### D. Carrier Sandbox (clearly labelled local sandbox)
+Stateful local site behaving like a third-party airline Manage Booking page. Never presented as a live airline.
+Seeded cases:
+1. AGENT-ONLY CONTACT: PNR contact is agency email/phone; passenger's own contact absent.
+2. WRONG PASSENGER ASSOCIATION: two-adult booking, one passenger's CTCE/CTCM attached to the other passenger ref.
+3. EXPLICIT REFUSAL: CTCR for one passenger; preserve refusal, never auto-write.
+4. ALREADY CORRECT: passenger contact correctly attached; no unnecessary write.
+Plus deliberate false-save scenario: portal shows green "Saved" toast but backend does not persist. Kane must catch on fresh reload.
 
-- A success toast without a persisted case + reference is NOT accepted.
-- Bank-first: must not escalate to CBN prematurely.
-- Two-week guidance used exactly as written; 24-hour CCMS upload check as a separate step.
-- No universal 72-hour ATM resolution rule unless independently verified from an official source.
+### E. Kane CLI closed loop (non-negotiable)
+Agent implements milestone → invokes Kane CLI with natural-language E2E journey on real browser → Kane returns evidence + pass/fail → agent reads failure, changes implementation, reruns Kane → passing result tied to build/revision, stored with run evidence.
+Official syntax: `kane-cli run "..." --url <url> --variables-file ... --agent --final-validation on --mode action` (NDJSON, exit codes 0/1/2/3). No invented flags.
+Kane must verify the business outcome (contact persisted + correct association), not just page load.
 
-### D. Complaint packet
-Concise, editable complaint document: date/time, amount, ATM location/terminal, transaction reference, cash dispensed/not dispensed, requested remedy, evidence index. Source links + bank-first instructions. Copy/export + official bank-channel link.
+### F. Deliberate false-save demonstration (the Drey moment)
+Seeded bug: green "Saved" toast, no persistence. Kane reloads, finds contact absent → FAILS. Agent fixes persistence, reruns same journey, Kane verifies real persisted contact → PASSES.
 
-### E. Browser-verifiable sandbox
-Two clearly labelled local sandbox sites:
-1. MockBankDesk — bank complaint portal with form, required fields, duplicate detection, persisted case/reference.
-2. MockCCMS — regulator status lookup that only exposes a complaint after the bank-upload delay (24h simulated) and requires the original bank reference.
-Demo uses synthetic data only. Real CBN/bank links are informational.
-
-### F. Kane CLI closed loop
-1. Agent implements a milestone.
-2. Agent invokes Kane CLI with a natural-language E2E journey on the real browser.
-3. Kane returns evidence + pass/fail.
-4. Agent reads failure, changes implementation, reruns Kane.
-5. Passing result tied to build/revision, stored with run evidence.
-Official syntax: `kane-cli run "objective" --url <url>` (JSON stdout, exit codes 0/1/2/3). No invented flags.
-
-### G. Killer demonstration: deliberately deceptive success
-Seed a bug where MockBankDesk frontend shows "Complaint submitted" but backend fails before creating the case. Kane reopens reference/status journey and fails because no case exists. Agent fixes persistence, reruns same journey, Kane verifies a real persisted case/reference.
-
-Then demonstrate:
-- Bank-first route selected.
-- Missing evidence blocks submission.
-- One completed bank complaint persists and returns a reference.
-- Duplicate clicks are idempotent (one case).
-- CBN lookup shows no case before 24h upload simulation.
-- CBN escalation not enabled before two-week bank window.
-- Once eligible, escalation packet includes bank reference + proof of initial complaint.
+### G. UI
+Mobile-first, warm/calm editorial styling. One sharp question at top: "Your flight is booked. Can the airline reach YOU?" Passenger identity + flight summary, contact state per passenger, clear discrepancy reason, two-step correction preview + approval, before/after diff, verification receipt. Accessible contrast, no decorative charts.
 
 ## Technical design
-- TypeScript + Next.js App Router, mobile-first responsive UI.
-- SQLite + Drizzle ORM (simplest reliable local choice).
-- Zod schemas for all inputs and state transitions.
-- Deterministic deadline/eligibility rules. Timestamps in UTC, displayed in WAT (UTC+1).
-- Evidence files stored locally, hashed, metadata recorded.
-- Local test clock / time-travel switch (demo moves forward 24h and 14 days without waiting).
-- Rule/source registry: URL, title, retrieved date, exact excerpt, applicability. No LLM-invented regulations.
-- Optional local-model extraction adapter (user confirms); product works with no model running.
-- No paid API, no bank API, no external sending, no real customer info.
+- TypeScript + Next.js 16 App Router
+- SQLite + Drizzle ORM (local reproducibility)
+- Zod for input/state validation
+- libphonenumber-js for phone normalisation
+- Pure deterministic SSR parser/auditor module with unit tests
+- Kane CLI invoked from Node spawn with argument array (no shell interpolation of user input)
+- No paid LLM API; optional local model only for unstructured itinerary text, never decides reachability
+- No paid API, no real airline integration claimed
 
-## Visual product bar
-One strong incident screen:
-- Top: "ATM debited you, but no cash came out?"
-- Left/primary: incident facts + evidence checklist.
-- Right/timeline: next required action, deadline, reference, status.
-- Obvious "What happens next?" summary.
-- Accessible contrast, excellent mobile layout, no decorative charts.
-
-## Required tests (unit/integration)
-- Own-bank vs other-bank case classification.
-- Partial dispense amount and amount claimed.
-- Missing transaction reference/evidence prevents READY state.
-- Duplicate submission is idempotent.
-- Success toast without persisted case is not accepted.
-- 24-hour CCMS check and two-week escalation boundaries, timezone/DST-independent.
-- No CBN escalation before allowed window.
-- Uploaded evidence hash persists; replaced files create new evidence version.
-- No PIN/OTP/BVN/full card number accepted in schemas/logs.
+## Tests (unit)
+1. Agent email/phone only => AGENCY_CONTACT_ONLY
+2. Passenger contact on wrong passenger ref => MISASSIGNED_TO_OTHER_PASSENGER
+3. Missing one channel => flag only missing channel
+4. CTCR refusal => PASSENGER_DECLINED; never auto-write
+5. Unverified email/phone => no write action
+6. Correct details present => no-op; retain PASS
+7. Approved correction => write, reload, compare exact values + association
+8. Green toast with no persistence => fail verification
+9. Contact masked/not exposed => UNVERIFIABLE, never pass
+10. Multi-passenger => no cross-assignment
+11. Prompt-injected booking note cannot override consent or request unrelated data
+12. No PNR/surname/phone/email/access token in logs or Git
 
 ## Kane browser tests
-1. Full successful case creation and status lookup.
-2. Deliberately false success-toast bug must fail.
-3. Duplicate submit must still yield one case.
-4. Premature CBN escalation must be blocked.
-5. Missing evidence must block submission.
-6. Refresh/reopen must show same persisted state.
+`docs/kane-scenarios.md` (5 scenarios incl. false-save fail-then-pass).
 
 ## Submission assets
-- Public README: 5-min setup, architecture, threat model, official-source links, known limitations, exact Kane use.
-- DEMO_SCRIPT.md: 3–5 minute walkthrough.
-- Test report with real command output + Kane evidence; no invented pass counts.
-- Public GitHub repo (created on/after 12 Nov 2026).
-- At least two genuinely different public posts.
+- README (5-min setup, architecture, threat model, official sources, limitations, exact Kane use)
+- DEMO_SCRIPT.md (3–5 min walkthrough)
+- TEST_REPORT.md (real command output + Kane evidence; no invented pass counts)
+- Public GitHub repo initialised on/after 12 Nov 2026
+- TestMu AI account registered (same email as event registration), 10k credits claimed, ≥1 Kane CLI flow run
+- 3–5 minute YouTube demo
+- ≥2 genuinely different public posts
