@@ -26,6 +26,8 @@ A task is done only when:
 - [ ] The behavior is exercised through a real endpoint (curl or browser), not just asserted in a unit test
 - [ ] If it's a Kane-facing behavior, a Kane run was attempted and the exit code + evidence were saved to `.testmuai/evidence/`
 - [ ] `REAL_VS_MOCKED.md` was updated if the claim's reality changed
+- [ ] `node scripts/kane-gate.mjs` exits 0 (all Kane flows green) — the involuntary gate
+- [ ] `scripts/kane-guard.mjs` protects test flows and evidence from writes
 
 ## Stop conditions
 

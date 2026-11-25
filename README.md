@@ -135,6 +135,27 @@ The script:
 
 `docs/kane-scenarios.md` documents the natural-language objectives for each seeded scenario.
 
+### Involuntary Kane hook (Closed Loop)
+
+PAXREACH wires Kane CLI into the agent loop involuntarily — not as a test tacked on at the end:
+
+- **`scripts/kane-guard.mjs`** — PreToolUse guard: denies writes to test flows (`tests/kane/*.test.md`) and sealed evidence (`.testmuai/evidence/`). Prevents weakening tests to turn red into green.
+- **`scripts/kane-hook.mjs`** — file watcher: fires `kane-cli run --agent --headless --final-validation on --mode action` on every save to `src/app/`, `src/lib/`, `tests/kane/`. Parses NDJSON, saves sealed evidence packs to `.testmuai/evidence/<flow>/latest.json`.
+- **`scripts/kane-gate.mjs`** — Stop gate: blocks completion until all Kane flows pass. Exits 2 if any flow fails.
+
+```bash
+# Involuntary watch mode: fires Kane on every save
+node scripts/kane-hook.mjs watch
+
+# Gate mode: blocks until all flows green (run before "done")
+node scripts/kane-gate.mjs
+
+# Single-scenario manual run
+node scripts/kane-verify.mjs falseSave   # expects exit 1 (bug), then exit 0 after fix
+```
+
+The Drey moment plays out live: FS7777 shows a green "Saved" toast, Kane reloads the booking and finds the contact was never persisted → FAIL → agent fixes persistence → Kane re-verifies → PASS.
+
 ## Data model
 
 Normalised SSR representation:

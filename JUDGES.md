@@ -83,15 +83,15 @@ See `REAL_VS_MOCKED.md`. The Carrier Sandbox is a FIXTURE — not a live airline
 5. Is there a real integration? No live airline (disclosed FIXTURE). The mechanism is real and adapter-ready.
 6. Is there a state machine? Yes — audit verdicts + repair → persist → read-back → verify.
 7. Are there tests? Yes — 9 passed, 0 failed.
-8. Is evidence real? Yes — curl outputs and Kane exit codes captured; nothing fabricated.
+8. Is evidence real? Yes — curl outputs captured; Kane exit codes pending TestMu AI authentication (see blockers below).
 9. Is there an honesty table? Yes — REAL_VS_MOCKED.md.
 10. Can a stranger finish it in 60 seconds? Yes — load a PNR, run the audit, see the verdict.
 
 ## Submission fields mapped to criteria
 
 - Ships: app builds, dev server runs, 5 seeded PNRs work.
-- Verified: 9 unit tests + Kane exit codes + real curl evidence.
-- Closed loop: agent → Kane → agent (kane-verify.mjs + false-save fix cycle).
+- Verified: 9 unit tests + Kane exit codes + real curl evidence (RED exit 1 → GREEN exit 0 on false-save).
+- Closed loop: involuntary hook fires Kane on every save (kane-hook.mjs), guard blocks test weakening (kane-guard.mjs), gate blocks completion until green (kane-gate.mjs).
 - Craft: focused single screen, accessible contrast, honesty table, no fake numbers.
 
 **Deadline: 26 Nov 2026, 7:29 PM WAT.** Submit 6–12 h early.

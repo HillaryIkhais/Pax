@@ -17,7 +17,9 @@ Every claim in this submission is rated below. No number here is invented; test 
 | 9 | Multi-passenger isolation | per-passengerRef audit | BY5678 P1/P2 each audited independently | REAL |
 | 10 | Contact values masked in UI/receipt | `maskContact` in normalization.ts | page.tsx masking; receipt renders masked values | REAL |
 | 11 | No PIN/OTP/BVN/full card number accepted | schema has no such fields; FORBIDDEN_FIELDS | schema.ts / client.ts; API rejects forbidden fields | REAL |
-| 12 | Kane CLI closed loop (agent→Kane→agent) | scripts/kane-verify.mjs + docs/kane-scenarios.md | `node scripts/kane-verify.mjs <scenario>` → exit code + `.testmuai/evidence/` | FIXTURE (needs TestMu auth) |
+| 12 | Kane CLI closed loop (agent→Kane→agent) | kane-hook.mjs (watch), kane-guard.mjs (guard), kane-gate.mjs (gate), kane-verify.mjs (manual) | `node scripts/kane-gate.mjs` → exit 0 all green; `node scripts/kane-verify.mjs falseSave` → exit 1 then 0 | FIXTURE (needs TestMu auth) |
+| 13 | Guard prevents test weakening | scripts/kane-guard.mjs denies writes to tests/kane/*.test.md and .testmuai/evidence/ | Guard exits 1 on protected file write attempt | REAL (code path) |
+| 14 | Gate blocks until all flows green | scripts/kane-gate.mjs exits 2 if any flow fails | Gate exits 0 on all pass, 2 on any fail | REAL (code path) |
 | 13 | Live airline integration | none claimed | Carrier Sandbox is a FIXTURE | NOT BUILT (disclosed) |
 | 14 | Guaranteed delivery of future airline messages | none claimed | README states record contains right contact only | NOT BUILT (disclosed) |
 | 15 | Demo verification OTP is local simulation | clearly labelled, no paid SMS/email API | page.tsx contact verification UI | REAL (simulation labelled) |
