@@ -1,5 +1,5 @@
 /* ------------------------------------------------------------------ */
-/* PAXREACH — Kane PreToolUse guard                                   */
+/* PAX — Kane PreToolUse guard                                   */
 /*                                                                     */
 /* Denies writes to test flows and sealed evidence recordings.         */
 /* The cheapest way to turn red into green is to weaken the test,      */

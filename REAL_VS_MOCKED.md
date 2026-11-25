@@ -1,4 +1,4 @@
-# PAXREACH — Honesty table (REAL / REAL-but-simplified / FIXTURE / NOT BUILT)
+# PAX — Honesty table (REAL / REAL-but-simplified / FIXTURE / NOT BUILT)
 
 Every claim in this submission is rated below. No number here is invented; test counts are the ones `npx vitest run` actually printed, and Kane exit codes are real CLI results.
 

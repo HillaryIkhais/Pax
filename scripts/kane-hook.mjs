@@ -1,5 +1,5 @@
 /* ------------------------------------------------------------------ */
-/* PAXREACH — Involuntary Kane CLI hook                               */
+/* PAX — Involuntary Kane CLI hook                               */
 /*                                                                     */
 /* Fires Kane CLI in a real Chrome browser on every save to app files. */
 /* On failure, injects the failure into agent context and saves        */
@@ -16,7 +16,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import * as chokidar from "chokidar";
 
-const APP_URL = process.env.PAXREACH_URL || "http://localhost:3000";
+const APP_URL = process.env.PAX_URL || "http://localhost:3000";
 const KANE = "kane-cli";
 const EVIDENCE_DIR = path.join(process.cwd(), ".testmuai", "evidence");
 const HOOK_STATE_DIR = path.join(process.cwd(), ".testmuai", "hook-state");

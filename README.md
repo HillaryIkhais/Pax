@@ -1,12 +1,12 @@
-# PAXREACH — Can the airline reach you?
+# PAX — Can the airline reach you?
 
 When a flight is booked through a travel agent, the agent sometimes puts their own phone number and email into the airline booking record (PNR). The airline's operational updates (delay, cancellation, schedule change) reach the agent — **not the passenger**. The passenger arrives at the airport unaware of the disruption.
 
-PAXREACH checks whether the airline's booking record actually contains the **passenger's own** verified contact details — and helps correct the record when it does not.
+PAX checks whether the airline's booking record actually contains the **passenger's own** verified contact details — and helps correct the record when it does not.
 
 ## One-line promise
 
-Passenger identity → verify contact association → obtain consent → correct the record → independently read it back. PAXREACH proves the booking record contains the right passenger contact, independently verified with Kane CLI.
+Passenger identity → verify contact association → obtain consent → correct the record → independently read it back. PAX proves the booking record contains the right passenger contact, independently verified with Kane CLI.
 
 ## The problem (real, documented)
 
@@ -16,7 +16,7 @@ Sources:
 - https://www.premiumtimesng.com/business/business-news/883203-how-poor-communication-from-travel-agents-leaves-air-passengers-stranded-official.html
 - https://portal.iata.org/faq/articles/en_US/FAQ/Are-airlines-storing-the-passengers-contacts-1448977354286/
 
-## What PAXREACH does
+## What PAX does
 
 1. Retrieve a PNR booking record (Carrier Sandbox for reproducible demos).
 2. Read and normalise the contact SSRs: **CTCE** (email), **CTCM** (mobile), **CTCR** (declined).
@@ -28,12 +28,12 @@ Sources:
 
 ## This is not a flight tracker
 
-TripIt and CheckMyTrip monitor/display itineraries. Neither audits or repairs the passenger contact details stored in the airline PNR. PAXREACH's missing primitive is passenger-level PNR contact assurance.
+TripIt and CheckMyTrip monitor/display itineraries. Neither audits or repairs the passenger contact details stored in the airline PNR. PAX's missing primitive is passenger-level PNR contact assurance.
 
 ## The Drey moment (Kane CLI closed loop)
 
 1. Kane opens a booking with the wrong passenger contact.
-2. PAXREACH proposes a correction; the passenger approves it.
+2. PAX proposes a correction; the passenger approves it.
 3. The portal shows a green `Saved` toast — but a deliberately injected backend bug prevents persistence.
 4. Kane reloads the booking and discovers the contact was **never saved**.
 5. The coding agent reads Kane's actual failure evidence, fixes the persistence path, reruns Kane.
@@ -90,7 +90,7 @@ npm run build
 
 ## Kane CLI verification
 
-Kane CLI (TestMu AI) runs real-browser flows and returns pass/fail. It is central to PAXREACH, not an afterthought.
+Kane CLI (TestMu AI) runs real-browser flows and returns pass/fail. It is central to PAX, not an afterthought.
 
 ### Install
 
@@ -126,7 +126,7 @@ node scripts/kane-verify.mjs agencyOnly
 ```
 
 The script:
-1. Writes seeded PNR variables to `.testmuai/variables/paxreach-demo.json`
+1. Writes seeded PNR variables to `.testmuai/variables/pax-demo.json`
 2. Runs `kane-cli run "..." --url ... --variables-file ... --agent --final-validation on --mode action --headless`
 3. Captures NDJSON + exit code, saves raw evidence to `.testmuai/evidence/`
 4. On `falseSave`, Kane returns failure (contact absent after reload)
@@ -137,7 +137,7 @@ The script:
 
 ### Involuntary Kane hook (Closed Loop)
 
-PAXREACH wires Kane CLI into the agent loop involuntarily — not as a test tacked on at the end:
+PAX wires Kane CLI into the agent loop involuntarily — not as a test tacked on at the end:
 
 - **`scripts/kane-guard.mjs`** — PreToolUse guard: denies writes to test flows (`tests/kane/*.test.md`) and sealed evidence (`.testmuai/evidence/`). Prevents weakening tests to turn red into green.
 - **`scripts/kane-hook.mjs`** — file watcher: fires `kane-cli run --agent --headless --final-validation on --mode action` on every save to `src/app/`, `src/lib/`, `tests/kane/`. Parses NDJSON, saves sealed evidence packs to `.testmuai/evidence/<flow>/latest.json`.

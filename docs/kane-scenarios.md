@@ -1,11 +1,11 @@
-# PAXREACH — Kane CLI scenarios
+# PAX — Kane CLI scenarios
 
-Natural-language objectives for `kane-cli run`. Each targets a seeded Carrier Sandbox booking. Variables are supplied via `.testmuai/variables/paxreach-demo.json`.
+Natural-language objectives for `kane-cli run`. Each targets a seeded Carrier Sandbox booking. Variables are supplied via `.testmuai/variables/pax-demo.json`.
 
 Official Kane syntax (v0.10.8):
 ```
 kane-cli run "<objective>" --url http://localhost:3000 \
-  --variables-file ./.testmuai/variables/paxreach-demo.json \
+  --variables-file ./.testmuai/variables/pax-demo.json \
   --agent --final-validation on --mode action --headless
 ```
 Exit codes: 0 = passed, 1 = failed, 2 = error, 3 = timeout/cancelled.
@@ -24,7 +24,7 @@ Expected: Kane PASSES — contacts correctly associated per passenger.
 
 ## Scenario 3 — declined contact (CZ9012 / IBRAHIM)
 
-Objective: Retrieve booking CZ9012 for surname IBRAHIM. Confirm CTCR (contact declined) for P1. Confirm PAXREACH does not write any contact and preserves the refusal. No repair action.
+Objective: Retrieve booking CZ9012 for surname IBRAHIM. Confirm CTCR (contact declined) for P1. Confirm PAX does not write any contact and preserves the refusal. No repair action.
 
 Expected: Kane PASSES — refusal preserved, no write.
 
@@ -42,7 +42,7 @@ Expected: Kane FAILS (exit code 1) — this is the deliberate false-save bug. Th
 
 This is the closed-loop demonstration: Kane catches the deception, the agent fixes it, Kane re-verifies.
 
-## Variables file (.testmuai/variables/paxreach-demo.json)
+## Variables file (.testmuai/variables/pax-demo.json)
 
 Example for agencyOnly:
 ```json

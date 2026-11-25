@@ -1,4 +1,4 @@
-# PAXREACH — Demo Script (3–5 minutes)
+# PAX — Demo Script (3–5 minutes)
 
 **YouTube demo:** 3–5 minutes. Walk through one complete "can the airline reach you?" contact assurance flow.
 
@@ -20,7 +20,7 @@
 
 **Open:** `http://localhost:3000`. Choose "BY5678 · ADEBAYO — Contact on wrong passenger (two adults)".
 
-**Show:** PAXREACH loads the booking. The reachability audit shows:
+**Show:** PAX loads the booking. The reachability audit shows:
 - Passenger P1 (Funke): reachable — her email/phone are on P1.
 - Passenger P2 (Bola): NOT reachable — P2's record shows Funke's contact (misassigned to the wrong passenger).
 
@@ -30,11 +30,11 @@
 
 ## 0:55–1:45 — The repair (consent + correction)
 
-**Show:** Bola enters her own email and phone, verifies control of each channel (clearly labelled local demo verification). PAXREACH shows the discrepancy: "A contact matching yours is attached to a different passenger."
+**Show:** Bola enters her own email and phone, verifies control of each channel (clearly labelled local demo verification). PAX shows the discrepancy: "A contact matching yours is attached to a different passenger."
 
 **Consent statement (plain language):** "You authorise these contact details to be shared with the airline for operational flight notifications only. Not for marketing." Bola approves.
 
-**Show:** PAXREACH applies the correction — writes Bola's email/phone to P2's CTCE/CTCM.
+**Show:** PAX applies the correction — writes Bola's email/phone to P2's CTCE/CTCM.
 
 ---
 
@@ -59,7 +59,7 @@
 
 ## 2:30–3:00 — Independent proof (read-back)
 
-**Return to BY5678 after the fix.** Kane reopens the booking. P1 has P1's contact, P2 has P2's contact. No cross-assignment. PAXREACH issues the evidence receipt: before/after digest, timestamp, masked contacts, passenger association, Kane evidence reference.
+**Return to BY5678 after the fix.** Kane reopens the booking. P1 has P1's contact, P2 has P2's contact. No cross-assignment. PAX issues the evidence receipt: before/after digest, timestamp, masked contacts, passenger association, Kane evidence reference.
 
 **Say:** "The booking record now contains each passenger's own contact. Independently verified."
 
@@ -69,7 +69,7 @@
 
 **Open:** CZ9012 · IBRAHIM (passenger declined contact).
 
-**Show:** PAXREACH shows CTCR — passenger declined. PAXREACH preserves the refusal and does NOT write any contact. Explains the consequence (passenger relies on the agent for updates).
+**Show:** PAX shows CTCR — passenger declined. PAX preserves the refusal and does NOT write any contact. Explains the consequence (passenger relies on the agent for updates).
 
 **Say:** "A passenger's refusal is respected. We never override it."
 

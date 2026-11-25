@@ -22,7 +22,7 @@ const DEMO_PNRS = [
   { pnr: "FS7777", surname: "FALSE", label: "False-save bug demo (Kane catches it)", issue: "FALSE_SAVE" },
 ] as const;
 
-export default function PaxreachPage() {
+export default function PaxPage() {
   const [step, setStep] = useState<Step>("start");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -312,7 +312,7 @@ export default function PaxreachPage() {
           Your flight is booked. Can the airline reach <span className="text-pax">YOU</span>?
         </h1>
         <p className="text-slate-600 mt-2">
-          PAXREACH checks whether your airline booking record contains <strong>your own</strong> contact details
+          PAX checks whether your airline booking record contains <strong>your own</strong> contact details
           — not just the travel agent's. It verifies passenger-to-contact association, helps correct the record with
           your consent, and independently proves the change persisted.
         </p>
@@ -614,7 +614,7 @@ export default function PaxreachPage() {
         <>
           <h2 className="text-lg font-semibold mb-4">Independent re-verification</h2>
           <p className="text-sm text-slate-600 mb-4">
-            The booking was re-opened in a fresh read. PAXREACH only marks verified if the persisted contact fields
+            The booking was re-opened in a fresh read. PAX only marks verified if the persisted contact fields
             match your verified details and the correct passenger association.
           </p>
           <div className="card p-4 mb-4">
@@ -663,7 +663,7 @@ export default function PaxreachPage() {
         <>
           <h2 className="text-lg font-semibold mb-4">Evidence receipt</h2>
           <div className="card p-5 mb-4 font-mono text-xs text-slate-700">
-            <div className="mb-2">PAXREACH — Passenger Contact Evidence Receipt</div>
+            <div className="mb-2">PAX — Passenger Contact Evidence Receipt</div>
             <div className="mb-2">PNR: {reverifyResult.after.pnr} &nbsp;|&nbsp; Surname: {reverifyResult.after.surname} &nbsp;|&nbsp; Airline: {reverifyResult.after.airline}</div>
             <div className="mb-2">Overall: <span className="font-bold">{receiptVerified ? "REACHABLE" : "NOT REACHABLE"}</span></div>
             <div className="mb-2">Verified at: {new Date().toISOString()}</div>

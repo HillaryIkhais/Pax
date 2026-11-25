@@ -1,5 +1,5 @@
 /* ------------------------------------------------------------------ */
-/* PAXREACH — Kane Stop gate                                          */
+/* PAX — Kane Stop gate                                          */
 /*                                                                     */
 /* Blocks agent completion until all Kane verification flows pass.     */
 /* Runs all flows in a real Chrome browser. Exits 0 only if all pass,  */

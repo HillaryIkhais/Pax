@@ -1,4 +1,4 @@
-# PAXREACH — Test Report
+# PAX — Test Report
 
 Generated: 24 November 2026
 Stack: TypeScript + Next.js 16 (App Router), SQLite + Drizzle, Vitest, Kane CLI v0.10.8
@@ -98,8 +98,8 @@ Not authenticated. Run: kane-cli login --oauth, or kane-cli login --username <us
 Register on TestMu AI (same email as event registration), claim 10,000 free credits, run `kane-cli login`. Running at least one Kane CLI flow is required to be scored.
 
 ### Verification script: `scripts/kane-verify.mjs`
-Runs a Kane flow against the PAXREACH app/Carrier Sandbox:
-1. Writes seeded PNR variables to `.testmuai/variables/paxreach-demo.json`
+Runs a Kane flow against the PAX app/Carrier Sandbox:
+1. Writes seeded PNR variables to `.testmuai/variables/pax-demo.json`
 2. Runs `kane-cli run "..." --url ... --variables-file ... --agent --final-validation on --mode action --headless`
 3. Captures NDJSON + exit code; saves raw evidence to `.testmuai/evidence/kane-<ts>.json`
 4. On `falseSave` scenario, Kane returns failure (contact absent after reload)
@@ -111,7 +111,7 @@ See `docs/kane-scenarios.md` (5 scenarios). Scenario 5 (`falseSave`) is the deli
 
 ### Involuntary Kane hook (Closed Loop)
 
-PAXREACH wires Kane CLI into the agent loop involuntarily — not as a test tacked on at the end:
+PAX wires Kane CLI into the agent loop involuntarily — not as a test tacked on at the end:
 
 - **`scripts/kane-guard.mjs`** — PreToolUse guard: denies writes to test flows (`tests/kane/*.test.md`) and sealed evidence (`.testmuai/evidence/`). Prevents weakening tests to turn red into green.
 - **`scripts/kane-hook.mjs`** — file watcher: fires `kane-cli run --agent --headless --final-validation on --mode action` on every save to `src/app/`, `src/lib/`, `tests/kane/`. Parses NDJSON, saves sealed evidence packs to `.testmuai/evidence/<flow>/latest.json`.

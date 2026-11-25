@@ -22,7 +22,7 @@ Archetype: Verification gate / evidence-provenance.
 - State machine DRAFT→…→RESOLVED gives many verifiable states.
 - Risk: User previously ruled out "GuardianKane-style: agent says done, Kane checks it" developer extension / complaint portal. CashCase is "agent builds complaint, Kane verifies bank submission" — structurally close to GuardianKane (2nd place previous edition). Generic complaint-portal risk.
 
-### Candidate B — PAXREACH (airline passenger contact assurance in PNR)
+### Candidate B — PAX (airline passenger contact assurance in PNR)
 Archetype: Missing trust layer.
 - Documented real problem: NCAA warned 27 May 2026 that agents put their own contact in PNRs; passengers arrive unaware of disruptions (Premium Times).
 - SSR fields CTCE (email), CTCM (mobile), CTCR (declined) — IATA / carrier policy documented.
@@ -40,7 +40,7 @@ Archetype: TBD.
 | Candidate | Integrations needed to mean something | Kill? |
 |---|---|---|
 | CashCase | Own app + Kane CLI (2) | No |
-| PAXREACH | Own app + Kane CLI (2) | No |
+| PAX | Own app + Kane CLI (2) | No |
 | Candidate C | TBD ≥3 likely | Yes (kill) |
 
 ## Nearest neighbors (why we're not them)
@@ -51,7 +51,7 @@ Archetype: TBD.
 
 ## Failure story (with numbers)
 
-Passenger books via agent. Agent enters their OWN email/phone in the PNR. Airline sends delay/cancellation notice → reaches agent, not passenger. NCAA (Nigeria) warned 27 May 2026: passengers arrived at Abuja airport unaware flights were disrupted. Two passengers, one booking: P1's contact attached to P2, or agency contact only. PAXREACH proves whether the record contains the passenger's OWN contact — not just "an email somewhere."
+Passenger books via agent. Agent enters their OWN email/phone in the PNR. Airline sends delay/cancellation notice → reaches agent, not passenger. NCAA (Nigeria) warned 27 May 2026: passengers arrived at Abuja airport unaware flights were disrupted. Two passengers, one booking: P1's contact attached to P2, or agency contact only. PAX proves whether the record contains the passenger's OWN contact — not just "an email somewhere."
 
 ## Invariant (one sentence, enforced in one place, attacked by a test)
 
@@ -73,6 +73,6 @@ Kane CLI (TestMu AI) is load-bearing: it reloads the PNR in a real browser after
 
 ## Decision
 
-**Build PAXREACH.** It scores highest on the judging tie-breaks (Verified then Closed loop): the false-save Drey moment is clean and browser-verifiable, and it is not close to any previous winner. CashCase is killed because it is structurally too close to GuardianKane (complaint-portal verification gate). Candidate C is killed due to time.
+**Build PAX.** It scores highest on the judging tie-breaks (Verified then Closed loop): the false-save Drey moment is clean and browser-verifiable, and it is not close to any previous winner. CashCase is killed because it is structurally too close to GuardianKane (complaint-portal verification gate). Candidate C is killed due to time.
 
 Scope frozen. No new features after this point except hardening the false-save Kane loop and the demo.

@@ -1,8 +1,8 @@
-# /judges — PAXREACH attack lab & verification
+# /judges — PAX attack lab & verification
 
-A tired judge can verify PAXREACH in 60 seconds. Attack each guard below; every one holds or fails honestly.
+A tired judge can verify PAX in 60 seconds. Attack each guard below; every one holds or fails honestly.
 
-**Central claim:** A booking record contains the *passenger's own* verified contact details — not just an agent's — and PAXREACH proves it by independently reading the record back after any correction.
+**Central claim:** A booking record contains the *passenger's own* verified contact details — not just an agent's — and PAX proves it by independently reading the record back after any correction.
 
 **Money shot:** Kane reloads the PNR after an approved correction and fails when a green "Saved" toast hid a false save.
 
@@ -31,21 +31,21 @@ The five seeded bookings (Carrier Sandbox — FIXTURE, not a live airline):
 
 Open `http://localhost:3000`, load `AX1234 / OKONKWO`.
 
-**Expected:** PAXREACH reports P1 NOT reachable with `AGENCY_CONTACT_ONLY` (contact belongs to `bookings@okonkwo-travels.ng`, the travel agent, not the passenger). No repair is possible until the passenger verifies their own contact and approves.
+**Expected:** PAX reports P1 NOT reachable with `AGENCY_CONTACT_ONLY` (contact belongs to `bookings@okonkwo-travels.ng`, the travel agent, not the passenger). No repair is possible until the passenger verifies their own contact and approves.
 
-**Attack it:** Try to get PAXREACH to mark P1 reachable without the passenger entering their own verified email/phone. It cannot — `auditPnrContact` requires a verified contact and compares actual CTCE/CTCM values against `passengerRef`.
+**Attack it:** Try to get PAX to mark P1 reachable without the passenger entering their own verified email/phone. It cannot — `auditPnrContact` requires a verified contact and compares actual CTCE/CTCM values against `passengerRef`.
 
 ## Attack 2 — Contact on wrong passenger (should not be silently accepted)
 
 Load `BY5678 / ADEBAYO`. Verify P1's contact, then P2's own contact.
 
-**Expected:** P2 is flagged `MISASSIGNED_TO_OTHER_PASSENGER` because P1's email/phone sits on P2's passengerRef. PAXREACH does not copy P1's contact to P2 or cross-assign. Each passenger is audited independently against their own verified values.
+**Expected:** P2 is flagged `MISASSIGNED_TO_OTHER_PASSENGER` because P1's email/phone sits on P2's passengerRef. PAX does not copy P1's contact to P2 or cross-assign. Each passenger is audited independently against their own verified values.
 
 ## Attack 3 — Declined contact (CTCR must never be overridden)
 
 Load `CZ9012 / IBRAHIM`.
 
-**Expected:** `PASSENGER_DECLINED`, `needsRepair: false`. PAXREACH never proposes or writes a contact for this passenger. The passenger relies on the agent for updates, and that choice is respected.
+**Expected:** `PASSENGER_DECLINED`, `needsRepair: false`. PAX never proposes or writes a contact for this passenger. The passenger relies on the agent for updates, and that choice is respected.
 
 ## Attack 4 — False green save (the Drey moment; Kane catches it)
 
@@ -64,7 +64,7 @@ node scripts/kane-verify.mjs falseSave   # expects exit code 0 (real persisted c
 
 ## Attack 5 — No green toast as proof anywhere
 
-In every flow, PAXREACH only marks `VERIFIED` after an independent read-back confirms persisted CTCE/CTCM match the passenger's verified details AND the correct passengerRef association. A `saved: true` API response alone never produces a verification receipt.
+In every flow, PAX only marks `VERIFIED` after an independent read-back confirms persisted CTCE/CTCM match the passenger's verified details AND the correct passengerRef association. A `saved: true` API response alone never produces a verification receipt.
 
 ## Attack 6 — No real customer data accepted
 

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "PAXREACH — Can the airline reach you?",
+  title: "PAX — Can the airline reach you?",
   description:
     "Verify that your airline booking record contains your own contact details. Passenger-level PNR contact assurance, independently verified.",
 };

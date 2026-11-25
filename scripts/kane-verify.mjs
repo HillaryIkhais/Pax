@@ -1,7 +1,7 @@
 /* ------------------------------------------------------------------ */
-/* PAXREACH — Kane CLI verification script                            */
+/* PAX — Kane CLI verification script                            */
 /*                                                                     */
-/* Runs Kane CLI in a real Chrome browser against the PAXREACH app     */
+/* Runs Kane CLI in a real Chrome browser against the PAX app     */
 /* and Carrier Sandbox. Drives the closed loop:                        */
 /*   Kane retrieves booking → inspects contact state → applies        */
 /*   approved correction → reloads booking → verifies persistence.    */
@@ -18,9 +18,9 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 
 const KANE = "kane-cli"; // resolved via PATH (npm global bin)
-const APP_URL = process.env.PAXREACH_URL || "http://localhost:3000";
+const APP_URL = process.env.PAX_URL || "http://localhost:3000";
 const EVIDENCE_DIR = path.join(process.cwd(), ".testmuai", "evidence");
-const VARS_FILE = path.join(process.cwd(), ".testmuai", "variables", "paxreach-demo.json");
+const VARS_FILE = path.join(process.cwd(), ".testmuai", "variables", "pax-demo.json");
 
 fs.mkdirSync(EVIDENCE_DIR, { recursive: true });
 fs.mkdirSync(path.dirname(VARS_FILE), { recursive: true });
@@ -203,7 +203,7 @@ async function main() {
   }
 
   const vars = writeVariables(scenario);
-  console.log(`\n=== PAXREACH Kane verification: ${scenarioName} ===`);
+  console.log(`\n=== PAX Kane verification: ${scenarioName} ===`);
   console.log(`PNR ${vars.pnr} · ${vars.surname} · passenger ${vars.passenger_ref}`);
   console.log(`App URL: ${APP_URL}`);
   console.log(`Variables: ${VARS_FILE}\n`);
@@ -256,7 +256,7 @@ function buildObjective(scenario, vars) {
     : "the passenger declined contact sharing";
 
   return [
-    `Open the PAXREACH app at ${APP_URL}.`,
+    `Open the PAX app at ${APP_URL}.`,
     `Retrieve booking ${vars.pnr} for surname ${vars.surname} in the Carrier Sandbox.`,
     `Read the contact SSRs (CTCE email, CTCM mobile, CTCR declined) for passenger ${scenario.passengerRef}.`,
     `Compare the observed contact against ${contactBits}.`,

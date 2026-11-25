@@ -1,7 +1,7 @@
-# PAXREACH — Product Spec
+# PAX — Product Spec
 
 ## One sentence
-When a flight is booked through a travel agent, PAXREACH checks whether the airline's booking record contains the passenger's own verified contact details for operational updates — and helps correct the record when it does not.
+When a flight is booked through a travel agent, PAX checks whether the airline's booking record contains the passenger's own verified contact details for operational updates — and helps correct the record when it does not.
 
 ## Problem (documented, real)
 A passenger books through a travel agent. The agent puts their own phone/email in the PNR. Airline operational updates (delay, cancellation, schedule change) reach the agent, not the passenger. The passenger arrives at the airport unaware of the disruption.
