@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PAX — Drey Moment</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #020617;
+    color: #e2e8f0;
+    font-family: 'Menlo', 'Monaco', 'Consolas', monospace;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .terminal {
+    width: 900px;
+    height: 600px;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .terminal-header {
+    background: #1e293b;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid #334155;
+  }
+  .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+  .dot.red { background: #ef4444; }
+  .dot.yellow { background: #f59e0b; }
+  .dot.green { background: #22c55e; }
+  .terminal-title {
+    font-size: 13px;
+    color: #94a3b8;
+    margin-left: auto;
+    font-weight: 600;
+  }
+  .terminal-body {
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .line {
+    margin-bottom: 14px;
+    white-space: pre-wrap;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: lineIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+  @keyframes lineIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .prompt {
+    color: #0f6f6b;
+    font-weight: 700;
+    margin-right: 8px;
+  }
+  .output {
+    color: #cbd5e1;
+  }
+  .output.error { color: #f87171; }
+  .output.success { color: #4ade80; }
+  .output.warn { color: #fbbf24; }
+  .output.dim { color: #64748b; font-style: italic; }
+  .cursor {
+    display: inline-block;
+    width: 8px;
+    height: 20px;
+    background: #0f6f6b;
+    animation: blink 1s infinite;
+    vertical-align: middle;
+  }
+  @keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+  }
+  .highlight {
+    background: rgba(15, 111, 107, 0.2);
+    padding: 2px 4px;
+    border-radius: 4px;
+  }
+  .code-block {
+    background: #020617;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 16px 0;
+    font-size: 13px;
+    overflow-x: auto;
+  }
+  .code-block .comment { color: #64748b; }
+  .code-block .keyword { color: #c084fc; }
+  .code-block .string { color: #f472b6; }
+  .code-block .function { color: #22d3ee; }
+  .badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 4px 0;
+  }
+  .badge.fail { background: #7f1d1d; color: #fca5a5; border: 1px solid #b91c1c; }
+  .badge.pass { background: #14532d; color: #86efac; border: 1px solid #16a34a; }
+  .split {
+    display: flex;
+    gap: 16px;
+    margin-top: 20px;
+  }
+  .pane {
+    flex: 1;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .pane-title {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-bottom: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+  <div class="terminal">
+    <div class="terminal-header">
+      <div class="dot red"></div>
+      <div class="dot yellow"></div>
+      <div class="dot green"></div>
+      <div class="terminal-title">kane-cli run</div>
+    </div>
+    <div class="terminal-body">
+      <div class="line"><span class="prompt">$</span> <span class="output">kane-cli run "Retrieve booking FS7777 for surname FALSE, apply approved contact correction, reload booking, verify persistence" --url http://localhost:3000 --agent --headless</span></div>
+      <div class="line"><span class="output dim">[stream_start] session_id: a1b2c3d4-e5f6-7890-abcd-ef1234567890</span></div>
+      <div class="line" id="line2"><span class="output dim">[recording_state] enabled: true, persist: true</span></div>
+      <div class="line" id="line3"><span class="output">Navigated to http://localhost:3000</span></div>
+      <div class="line" id="line4"><span class="output">Loaded booking FS7777 for surname FALSE</span></div>
+      <div class="line" id="line5"><span class="output">Read CTCE for passenger P1: <span class="highlight">old@example.com</span></span></div>
+      <div class="line" id="line6"><span class="output">Applied approved correction: CTCE → new@example.com</span></div>
+      <div class="line" id="line7"><span class="output success">Portal returned: "Saved" (green toast)</span></div>
+      <div class="line" id="line8"><span class="output">Reloading booking in fresh browser read...</span></div>
+      <div class="line" id="line9"><span class="output error">CTCE after reload: <span class="highlight">old@example.com</span> (NOT new@example.com)</span></div>
+      <div class="line" id="line10"><span class="output error">Contact was NOT persisted despite green toast</span></div>
+      <div class="line" id="line11"><span class="output error">Assertion failed: "contact persisted after reload"</span></div>
+      <div class="line" id="line12"><span class="badge fail">EXIT CODE 1 — TEST FAILED</span></div>
+      
+      <div class="split" id="splitPane" style="opacity: 0; transform: translateY(20px);">
+        <div class="pane">
+          <div class="pane-title">Agent context</div>
+          <div class="code-block">
+            <span class="comment">// Kane failure evidence injected into agent</span>
+            <span class="keyword">const</span> failure = {
+              step: 5,
+              reason: <span class="string">"contact not persisted after reload"</span>,
+              evidence: <span class="string">"CTCE still old@example.com after green Saved toast"</span>,
+              screenshot: <span class="string">".testmuai/evidence/false-save/latest.json"</span>
+            };
+          </div>
+        </div>
+        <div class="pane">
+          <div class="pane-title">Agent fix</div>
+          <div class="code-block">
+            <span class="comment">// Fix persistence in contact update route</span>
+            <span class="keyword">await</span> sqlite<span class="function">.exec</span>(<span class="string">"COMMIT"</span>);
+            <span class="comment">// Previously: sqlite.exec("ROLLBACK") on false-save PNR</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="line" id="line13" style="opacity: 0; transform: translateY(20px);"><span class="output">Agent patched persistence path. Rerunning Kane...</span></div>
+      <div class="line" id="line14" style="opacity: 0; transform: translateY(20px);"><span class="output">Kane CLI reloads booking FS7777 in fresh read</span></div>
+      <div class="line" id="line15" style="opacity: 0; transform: translateY(20px);"><span class="output success">CTCE after reload: <span class="highlight">new@example.com</span> (persisted ✓)</span></div>
+      <div class="line" id="line16" style="opacity: 0; transform: translateY(20px);"><span class="output success">PassengerRef association: P1 ✓</span></div>
+      <div class="line" id="line17" style="opacity: 0; transform: translateY(20px);"><span class="badge pass">EXIT CODE 0 — TEST PASSED</span></div>
+      <div class="line" id="line18" style="opacity: 0; transform: translateY(20px);"><span class="output dim">Evidence saved: .testmuai/evidence/false-save/latest.json</span></div>
+    </div>
+  </div>
+
+  <script>
+    const lines = document.querySelectorAll('.line');
+    const splitPane = document.getElementById('splitPane');
+    
+    // Staggered reveal
+    lines.forEach((line, i) => {
+      line.style.animationDelay = (i * 400) + 'ms';
+    });
+    
+    // Reveal split pane after line 12
+    setTimeout(() => {
+      splitPane.style.opacity = '1';
+      splitPane.style.transform = 'translateY(0)';
+      splitPane.style.transition = 'all 0.6s cubic-bezier(0.2, 0.8, 0.2, 1)';
+    }, 12 * 400 + 200);
+    
+    // Reveal remaining lines after split pane
+    setTimeout(() => {
+      const remaining = document.querySelectorAll('#line13, #line14, #line15, #line16, #line17, #line18');
+      remaining.forEach((line, i) => {
+        line.style.animationDelay = (i * 400) + 'ms';
+      });
+    }, 13 * 400 + 500);
+  </script>
+</body>
+</html>

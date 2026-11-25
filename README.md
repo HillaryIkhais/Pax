@@ -1,188 +1,157 @@
-# PAX — Can the airline reach you?
+<div align="center">
+  <img src="https://github.com/HillaryIkhais/Pax/raw/main/public/pax-icon.svg" width="160" alt="PAX" />
+  # PAX
+  ### Your flight is booked. But can the airline reach **you**?
+  <br/>
+  <sub>A passenger-level PNR contact assurance tool, independently browser-verified with Kane CLI.</sub>
+</div>
 
-When a flight is booked through a travel agent, the agent sometimes puts their own phone number and email into the airline booking record (PNR). The airline's operational updates (delay, cancellation, schedule change) reach the agent — **not the passenger**. The passenger arrives at the airport unaware of the disruption.
+---
 
-PAX checks whether the airline's booking record actually contains the **passenger's own** verified contact details — and helps correct the record when it does not.
+## The moment that made this necessary
 
-## One-line promise
+You book a flight through a travel agent. The agent types their own phone number and email into the airline's booking record — not yours. The airline sends a delay, a schedule change, a cancellation. It lands in the agent's inbox. You show up at the airport unaware your flight has been disrupted.
 
-Passenger identity → verify contact association → obtain consent → correct the record → independently read it back. PAX proves the booking record contains the right passenger contact, independently verified with Kane CLI.
+This isn't hypothetical. On **May 27, 2026**, Nigeria's civil aviation authority warned that passengers arrived at Abuja airport having no idea their flights were disrupted — because travel agents had used their own contact details in the PNR.
 
-## The problem (real, documented)
+The airline had a way to contact someone. It just wasn't the passenger.
 
-On 27 May 2026, Nigeria's civil aviation authority warned that passengers arrived at Abuja airport unaware their flights had been disrupted because travel agents used their own contact details in PNRs.
-
-Sources:
-- https://www.premiumtimesng.com/business/business-news/883203-how-poor-communication-from-travel-agents-leaves-air-passengers-stranded-official.html
-- https://portal.iata.org/faq/articles/en_US/FAQ/Are-airlines-storing-the-passengers-contacts-1448977354286/
+---
 
 ## What PAX does
 
-1. Retrieve a PNR booking record (Carrier Sandbox for reproducible demos).
-2. Read and normalise the contact SSRs: **CTCE** (email), **CTCM** (mobile), **CTCR** (declined).
-3. Compare each adult passenger's verified contact against the SSR attached to **that passenger's reference** — never infer ownership from name or mere presence.
-4. Show the exact discrepancy (agent-only contact, misassigned contact, missing channel, declined).
-5. Require explicit passenger consent before writing any contact detail.
-6. Apply the approved correction, reload the PNR in a fresh read, and verify the values persisted.
-7. Issue an evidence receipt (before/after digest, timestamps, masked contacts, Kane evidence reference).
+PAX checks whether the airline's booking record actually contains **your own** verified contact details — and helps correct the record when it does not.
 
-## This is not a flight tracker
+It reads the contact fields airlines actually use: **CTCE** (email), **CTCM** (mobile), **CTCR** (declined). Then it compares what's on the record against what you've verified as your own — checking that the contact is attached to **your** passenger reference, not the agent's, and not another passenger's.
 
-TripIt and CheckMyTrip monitor/display itineraries. Neither audits or repairs the passenger contact details stored in the airline PNR. PAX's missing primitive is passenger-level PNR contact assurance.
+If something is wrong or missing, PAX shows you the exact discrepancy, asks for your consent, applies only the correction you approve — then reloads the booking in a fresh read to prove the change actually persisted. No green toast accepted as proof.
 
-## The Drey moment (Kane CLI closed loop)
+---
+
+## Verify it in 60 seconds
+
+```bash
+# 1. Install and seed the demo (Carrier Sandbox — clearly labelled, not a live airline)
+npm install
+npx tsx src/scripts/seed.ts
+
+# 2. Start the app
+npm run dev
+
+# 3. Open http://localhost:3000 and try these in order:
+#   AX1234 / OKONKWO   → agent's contact on your PNR (flagged)
+#   BY5678 / ADEBAYO   → your contact on the wrong passenger (flagged)
+#   CZ9012 / IBRAHIM   → you declined contact (preserved, never written)
+#   DX3456 / SANUSI    → already correct (no unnecessary write)
+#   FS7777 / FALSE     → the Drey moment: Kane catches a green "Saved" toast that hid no persistence
+```
+
+**Expected:** PAX tells you exactly what's wrong, lets you approve a correction, then reloads the booking to verify it stuck. Every claim above is reproducible with one command.
+
+---
+
+## The Drey moment (the Kane CLI closed loop)
+
+PAX is built to be verified, not just demonstrated.
 
 1. Kane opens a booking with the wrong passenger contact.
-2. PAX proposes a correction; the passenger approves it.
+2. PAX proposes a correction; you approve it.
 3. The portal shows a green `Saved` toast — but a deliberately injected backend bug prevents persistence.
-4. Kane reloads the booking and discovers the contact was **never saved**.
+4. Kane reloads the booking in a fresh browser read and discovers the contact was **never saved**. Kane returns failure.
 5. The coding agent reads Kane's actual failure evidence, fixes the persistence path, reruns Kane.
 6. Kane reopens the booking and verifies the corrected contact against the right passenger.
 
 No green toast accepted as proof. No LLM declaring itself successful.
 
-## Stack
+**Kane CLI** is not a logo tacked on at the end. It's the verification layer that closes the loop: agent builds → Kane verifies → agent re-prompts from Kane's failure evidence → Kane re-verifies. That's the loop this submission is scored on.
 
-- Next.js 16 + TypeScript (App Router)
-- SQLite (local demo state, no managed DB)
-- Drizzle ORM + Zod (schema/validation)
-- libphonenumber-js (phone normalisation, E.164)
-- Tailwind CSS (mobile-first, accessible contrast)
-- Kane CLI (independent real-browser verifier)
+---
 
-No paid APIs, no frontier model required, no real airline integration claimed.
+## What's real vs what's simulated
 
-## Quick start
+| Claim | Status | Evidence |
+|-------|--------|----------|
+| Deterministic contact audit (CTCE/CTCM/CTCR) | Real | `src/lib/audit/engine.ts`, 9 unit tests pass |
+| Consent-gated contact write | Real | API requires `approved: true`; never writes without it |
+| CTCR refusal preserved | Real | `PASSENGER_DECLINED`, `needsRepair: false` |
+| False-save bug caught by Kane | Fixture (sandbox) | `FS7777` seeded scenario; Kane run required (see below) |
+| Live airline integration | **Not built** | Disclosed. Carrier Sandbox is a local simulation, not a live airline |
+| Guaranteed message delivery | **Not claimed** | PAX proves the record contains your contact; it does not guarantee future airline SMS/email |
 
-### Prerequisites
-- Node.js 18+
-- Google Chrome (required for Kane CLI)
+---
 
-### Install & run
+## Sponsor integration: Kane CLI (load-bearing)
+
+| Primitive | Role in PAX | File |
+|-----------|-------------|------|
+| `kane-cli run --agent --final-validation on --mode action` | Real-browser reload-and-verify of the corrected contact | `scripts/kane-hook.mjs`, `tests/kane/*.test.md` |
+| NDJSON `run_end` verdict + exit codes | Parsed programmatically; drives agent re-prompt | `scripts/kane-hook.mjs` |
+| Sealed evidence pack | Saved per flow to `.testmuai/evidence/` | `scripts/kane-hook.mjs` |
+
+Kane CLI is load-bearing, not decorative. Without it, there is no independent verification of whether a contact actually persisted.
+
+---
+
+## Engineering decisions (the bugs we actually found)
+
+1. **Check-then-act on contact writes** — Early draft read the PNR, then wrote the correction. Race condition: two corrections could overwrite each other. Fixed with an atomic upsert keyed on `(pnr, passengerRef, ssrType)`.
+2. **Green toast ≠ persistence** — The false-save scenario (FS7777) shows "Saved" but never writes. This is the seeded bug Kane is designed to catch. It demonstrates why PAX reloads the booking in a fresh read instead of trusting the frontend response.
+3. **Agent contact ownership** — Never infer that a contact is the passenger's from the name or mere presence in the PNR. `auditPnrContact` compares actual CTCE/CTCM values to your separately verified values and checks `passengerRef` association.
+
+---
+
+## What the model does / never does
+
+- **Does:** Helps draft objectives, explains discrepancies in plain language.
+- **Never:** Decides reachability, computes pass/fail, states a number not in the record, or writes to the booking without explicit consent. The audit engine is a pure function with injected time; code decides, the model proposes.
+
+---
+
+## Known limits
+
+- The reproducible demo uses a clearly labelled **Carrier Sandbox** (MockAir). No live airline integration exists or is claimed.
+- Kane CLI browser flows require TestMu AI authentication (`kane-cli login`). You must register and run at least one Kane CLI flow to be scored.
+- No real customer data: contact values are masked in UI and receipts (e.g. `b•••••s@domain`, `••••0000`).
+
+---
+
+## Run it locally
 
 ```bash
+git clone https://github.com/HillaryIkhais/Pax.git
+cd Pax
 npm install
-npx tsx src/scripts/seed.ts     # seed the Carrier Sandbox (5 demo PNRs)
-npm run dev                     # open http://localhost:3000
+npx tsx src/scripts/seed.ts     # seeds 5 demo PNRs
+npm run dev                     # http://localhost:3000
+npx vitest run                  # 9 passed, 0 failed
+npx next build                  # clean build
 ```
 
-### Seeded demo bookings (Carrier Sandbox — clearly labelled, not a live airline)
+**Live demo / Kane verification:** Requires TestMu AI authentication. Register, claim credits, run `kane-cli login --oauth`, then execute the scenarios in `tests/kane/*.test.md`.
 
-| PNR | Surname | Scenario |
-|-----|---------|----------|
-| AX1234 | OKONKWO | Agent-only contact (agency email/phone) |
-| BY5678 | ADEBAYO | Contact on wrong passenger (two adults) |
-| CZ9012 | IBRAHIM | Passenger declined contact (CTCR) |
-| DX3456 | SANUSI | Already correct (no change needed) |
-| FS7777 | FALSE | False-save bug demo (Kane catches it) |
-
-### Run unit tests
-
-```bash
-npx vitest run   # 9 passed, 0 failed
-```
-
-### Build
-
-```bash
-npm run build
-```
-
-## Kane CLI verification
-
-Kane CLI (TestMu AI) runs real-browser flows and returns pass/fail. It is central to PAX, not an afterthought.
-
-### Install
-
-```bash
-npm install -g @testmuai/kane-cli
-kane-cli --version   # 0.10.8
-```
-
-### Authenticate (required for scored runs)
-
-```bash
-kane-cli login --oauth          # or --username <user> --access-key <key>
-kane-cli whoami
-```
-
-Register on TestMu AI with the same email used for event registration and claim the 10,000 free credits. Running at least one Kane CLI flow is required to be scored.
-
-### Run a flow
-
-```bash
-kane-cli run "<objective>" --url http://localhost:3000 --headless
-```
-
-Exit codes: 0 = passed, 1 = failed, 2 = error, 3 = timeout/cancelled.
-
-Structured NDJSON for AI coding agents: add `--agent`.
-
-### Verification script
-
-```bash
-node scripts/kane-verify.mjs agencyOnly
-# Scenarios: agencyOnly, misassigned, declined, alreadyCorrect, falseSave
-```
-
-The script:
-1. Writes seeded PNR variables to `.testmuai/variables/pax-demo.json`
-2. Runs `kane-cli run "..." --url ... --variables-file ... --agent --final-validation on --mode action --headless`
-3. Captures NDJSON + exit code, saves raw evidence to `.testmuai/evidence/`
-4. On `falseSave`, Kane returns failure (contact absent after reload)
-
-### Kane test objectives (docs)
-
-`docs/kane-scenarios.md` documents the natural-language objectives for each seeded scenario.
-
-### Involuntary Kane hook (Closed Loop)
-
-PAX wires Kane CLI into the agent loop involuntarily — not as a test tacked on at the end:
-
-- **`scripts/kane-guard.mjs`** — PreToolUse guard: denies writes to test flows (`tests/kane/*.test.md`) and sealed evidence (`.testmuai/evidence/`). Prevents weakening tests to turn red into green.
-- **`scripts/kane-hook.mjs`** — file watcher: fires `kane-cli run --agent --headless --final-validation on --mode action` on every save to `src/app/`, `src/lib/`, `tests/kane/`. Parses NDJSON, saves sealed evidence packs to `.testmuai/evidence/<flow>/latest.json`.
-- **`scripts/kane-gate.mjs`** — Stop gate: blocks completion until all Kane flows pass. Exits 2 if any flow fails.
-
-```bash
-# Involuntary watch mode: fires Kane on every save
-node scripts/kane-hook.mjs watch
-
-# Gate mode: blocks until all flows green (run before "done")
-node scripts/kane-gate.mjs
-
-# Single-scenario manual run
-node scripts/kane-verify.mjs falseSave   # expects exit 1 (bug), then exit 0 after fix
-```
-
-The Drey moment plays out live: FS7777 shows a green "Saved" toast, Kane reloads the booking and finds the contact was never persisted → FAIL → agent fixes persistence → Kane re-verifies → PASS.
-
-## Data model
-
-Normalised SSR representation:
-- `type`: CTCE | CTCM | CTCR
-- `passengerRef`: P1, P2, ...
-- `segmentRef` (optional)
-- `value`, `sourceRecordId`, `rawSourceText`, `observedAt`
-
-Audit verdicts: PASSENGER_CONTACT_MATCH, AGENCY_CONTACT_ONLY, MISSING_EMAIL, MISSING_MOBILE, MISASSIGNED_TO_OTHER_PASSENGER, MALFORMED_CONTACT, PASSENGER_DECLINED, RECORD_NOT_EXPOSED, UNKNOWN.
-
-## Evidence & data minimisation
-
-- Verified contacts are held in memory for the session; never emailed/SMS'd via a paid API.
-- Contact values are masked in the UI and receipts (e.g. `b•••••s@okonkwo-travels.ng`, `••••0000`).
-- No PNR, surname, phone, email, or access token is written to application logs or Git.
-- The demo OTP/verification is clearly labelled local simulation — not a production identity service.
-
-## Known limitations
-
-- The reproducible demo uses a clearly labelled Carrier Sandbox. We do not claim live airline integration or guaranteed delivery of future airline messages.
-- Kane CLI browser flows require TestMu AI authentication (`kane-cli login`).
-- Automated updates to a real carrier Manage Booking page require a tested carrier adapter; otherwise the official Manage Booking link is provided and automated update is marked unsupported.
+---
 
 ## Submission assets
 
 - `PRODUCT_SPEC.md` — full product specification
-- `SOURCES.md` — rule/source registry
+- `SOURCES.md` — rule/source registry (NCAA warning, IATA PNR contacts, Airlink policy)
 - `DEMO_SCRIPT.md` — 3–5 minute demo walkthrough
 - `TEST_REPORT.md` — real test + Kane evidence
-- `docs/kane-scenarios.md` — Kane scenario objectives
+- `JUDGES.md` — attack lab + 20 judge answers
+- `REAL_VS_MOCKED.md` — honesty table
+- `tests/kane/*.test.md` — 5 Kane CLI scenario objectives
+- `scripts/kane-hook.mjs` / `kane-guard.mjs` / `kane-gate.mjs` — involuntary closed loop
+
+---
+
+**Deadline:** November 26, 2026, 7:29 PM WAT.
+
+**Repo:** https://github.com/HillaryIkhais/Pax.git
+
+**Built for:** Kane CLI Online Hackathon by TestMu AI — Build it with any agent. Verify it with Kane. Ship in two weeks.
+
+---
+
+<p align="center">
+  <b>Your flight is booked. Can the airline reach you?</b>
+</p>

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PAX — Kinetic Typography</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #020617;
+    color: #ffffff;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .word {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(30px) scale(0.9);
+    animation: wordIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+  .word.highlight {
+    color: #0f6f6b;
+    font-weight: 700;
+  }
+  .word.yellow {
+    color: #f59e0b;
+  }
+  .word.red {
+    color: #b91c1c;
+  }
+  @keyframes wordIn {
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  .line {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: lineFade 0.4s ease forwards;
+  }
+  @keyframes lineFade {
+    to { opacity: 1; }
+  }
+  .fade-out {
+    animation: fadeOut 0.4s ease forwards !important;
+  }
+  @keyframes fadeOut {
+    to { opacity: 0; transform: scale(0.8); }
+  }
+  .glitch {
+    position: relative;
+  }
+  .glitch::before, .glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .glitch::before {
+    left: 2px;
+    text-shadow: -1px 0 #ff00c1;
+    clip: rect(24px, 550px, 90px, 0);
+    animation: glitch-anim-1 2s infinite linear alternate-reverse;
+  }
+  .glitch::after {
+    left: -2px;
+    text-shadow: -1px 0 #00fff9;
+    clip: rect(85px, 550px, 140px, 0);
+    animation: glitch-anim-2 3s infinite linear alternate-reverse;
+  }
+  @keyframes glitch-anim-1 {
+    0% { clip: rect(12px, 550px, 70px, 0); }
+    20% { clip: rect(5px, 550px, 40px, 0); }
+    40% { clip: rect(80px, 550px, 120px, 0); }
+    60% { clip: rect(10px, 550px, 60px, 0); }
+    80% { clip: rect(45px, 550px, 30px, 0); }
+    100% { clip: rect(70px, 550px, 20px, 0); }
+  }
+  @keyframes glitch-anim-2 {
+    0% { clip: rect(15px, 550px, 100px, 0); }
+    20% { clip: rect(80px, 550px, 15px, 0); }
+    40% { clip: rect(30px, 550px, 90px, 0); }
+    60% { clip: rect(5px, 550px, 100px, 0); }
+    80% { clip: rect(40px, 550px, 70px, 0); }
+    100% { clip: rect(10px, 550px, 80px, 0); }
+  }
+</style>
+</head>
+<body>
+  <div class="line" id="line1">
+    <span class="word" data-text="Your">Your</span>
+    <span class="word highlight" data-text="flight">flight</span>
+    <span class="word" data-text="is">is</span>
+    <span class="word" data-text="booked.">booked.</span>
+    <span class="word red" data-text="But">But</span>
+    <span class="word" data-text="can">can</span>
+    <span class="word highlight" data-text="the">the</span>
+    <span class="word highlight" data-text="airline">airline</span>
+    <span class="word" data-text="reach">reach</span>
+    <span class="word yellow" data-text="YOU?">YOU?</span>
+  </div>
+
+  <script>
+    const lines = [
+      {
+        text: "Your flight is booked. But can the airline reach YOU?",
+        highlight: [1, 7, 8],
+        yellow: [9],
+        delay: 0
+      },
+      {
+        text: "The airline had a way to contact someone. It just wasn't you.",
+        red: [6, 8],
+        delay: 4000
+      },
+      {
+        text: "Nothing was saved. The green toast was a lie.",
+        red: [3, 6],
+        delay: 8000
+      },
+      {
+        text: "No green toast accepted as proof.",
+        red: [3],
+        delay: 12000
+      },
+      {
+        text: "The airline should be able to reach the person who bought the ticket.",
+        highlight: [4, 5],
+        delay: 16000
+      }
+    ];
+
+    let currentLine = 0;
+    const container = document.body;
+
+    function renderLine(lineData) {
+      container.innerHTML = '<div class="line"></div>';
+      const lineDiv = container.querySelector('.line');
+      const words = lineData.text.split(' ');
+      words.forEach((word, i) => {
+        const span = document.createElement('span');
+        span.className = 'word';
+        span.textContent = word;
+        if (lineData.highlight && lineData.highlight.includes(i)) span.classList.add('highlight');
+        if (lineData.yellow && lineData.yellow.includes(i)) span.classList.add('yellow');
+        if (lineData.red && lineData.red.includes(i)) span.classList.add('red');
+        lineDiv.appendChild(span);
+      });
+      lineDiv.style.animationDelay = '0s';
+      lineDiv.style.animation = 'none';
+      lineDiv.offsetHeight; // trigger reflow
+      lineDiv.style.animation = 'lineFade 0.4s ease forwards';
+    }
+
+    renderLine(lines[0]);
+
+    setTimeout(() => {
+      document.querySelector('.line').classList.add('fade-out');
+      setTimeout(() => renderLine(lines[1]), 400);
+    }, 3500);
+
+    setTimeout(() => {
+      document.querySelector('.line').classList.add('fade-out');
+      setTimeout(() => renderLine(lines[2]), 400);
+    }, 7500);
+
+    setTimeout(() => {
+      document.querySelector('.line').classList.add('fade-out');
+      setTimeout(() => renderLine(lines[3]), 400);
+    }, 11500);
+
+    setTimeout(() => {
+      document.querySelector('.line').classList.add('fade-out');
+      setTimeout(() => renderLine(lines[4]), 400);
+    }, 15500);
+  </script>
+</body>
+</html>

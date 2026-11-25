@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PAX — Interface Choreography</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #f8fafc;
+    color: #0f172a;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .phone {
+    width: 390px;
+    height: 844px;
+    background: #ffffff;
+    border: 2px solid #334155;
+    border-radius: 36px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    position: relative;
+    padding: 40px 24px;
+    display: flex;
+    flex-direction: column;
+  }
+  .phone::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 20px;
+    background: #020617;
+    border-radius: 20px 20px 0 0;
+    z-index: 10;
+  }
+  .screen {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+  .slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transform: translateX(30px);
+    transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+    padding: 20px 0;
+  }
+  .slide.active {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  .slide.exit {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  h1 {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+  h1 span {
+    color: #0f6f6b;
+  }
+  p {
+    font-size: 15px;
+    color: #64748b;
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+  .form-group {
+    margin-bottom: 16px;
+  }
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #94a3b8;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    font-size: 15px;
+    background: #f8fafc;
+    transition: all 0.2s;
+  }
+  input:focus {
+    outline: none;
+    border-color: #0f6f6b;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(15, 111, 107, 0.1);
+  }
+  button {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    background: #0f6f6b;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 8px;
+  }
+  button:hover {
+    background: #0d5c59;
+  }
+  button:active {
+    transform: scale(0.98);
+  }
+  .verdict {
+    padding: 20px;
+    border-radius: 16px;
+    margin-top: 20px;
+    display: none;
+  }
+  .verdict.not-reachable {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    display: block;
+  }
+  .verdict.verified {
+    background: #f0fdf4;
+    border: 1px solid #86efac;
+    display: none;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .badge.red {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+  .badge.green {
+    background: #d1fae5;
+    color: #065f46;
+  }
+  .badge.amber {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  .verdict h3 {
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+  .verdict p {
+    font-size: 14px;
+    color: #64748b;
+    margin: 0;
+  }
+  .receipt {
+    margin-top: 16px;
+    padding: 16px;
+    background: #f1f5f9;
+    border-radius: 12px;
+    font-size: 13px;
+    color: #475569;
+    font-family: 'Menlo', monospace;
+    border-left: 4px solid #0f6f6b;
+    display: none;
+  }
+  .receipt.active {
+    display: block;
+  }
+  .toast {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #d1fae5;
+    border: 1px solid #86efac;
+    color: #065f46;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    z-index: 20;
+  }
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+  .toast.fake {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #991b1b;
+  }
+  .cursor {
+    width: 20px;
+    height: 20px;
+    background: #0f6f6b;
+    border-radius: 50%;
+    position: absolute;
+    pointer-events: none;
+    box-shadow: 0 0 10px rgba(15, 111, 107, 0.5);
+    opacity: 0;
+    transition: all 0.3s ease;
+  }
+  .cursor.visible {
+    opacity: 1;
+  }
+  .highlight-ring {
+    position: absolute;
+    border: 2px solid #0f6f6b;
+    border-radius: 8px;
+    opacity: 0;
+    transition: all 0.3s ease;
+    pointer-events: none;
+  }
+  .highlight-ring.visible {
+    opacity: 1;
+  }
+</style>
+</head>
+<body>
+  <div class="phone">
+    <div class="cursor" id="cursor"></div>
+    <div class="highlight-ring" id="ring"></div>
+    <div class="screen">
+      <!-- Slide 1: Hero -->
+      <div class="slide active" id="slide1">
+        <h1>Your flight is booked.<br><span>But can the airline reach you?</span></h1>
+        <p>PAX checks whether your airline booking record contains your own contact details — not just the travel agent's.</p>
+        <div class="form-group">
+          <label>Booking reference (PNR)</label>
+          <input type="text" placeholder="e.g. AX1234" id="pnrInput">
+        </div>
+        <div class="form-group">
+          <label>Surname</label>
+          <input type="text" placeholder="e.g. OKONKWO" id="surnameInput">
+        </div>
+        <button id="loadBtn">Load booking</button>
+      </div>
+
+      <!-- Slide 2: Verify contacts -->
+      <div class="slide" id="slide2">
+        <h1>Verify passenger contacts</h1>
+        <p>Enter each passenger's own email and phone. We compare against the airline record — we don't send anything anywhere.</p>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" placeholder="you@example.com" id="emailInput">
+        </div>
+        <div class="form-group">
+          <label>Mobile</label>
+          <input type="tel" placeholder="+234 801 234 5678" id="phoneInput">
+        </div>
+        <button id="auditBtn">Run reachability audit</button>
+      </div>
+
+      <!-- Slide 3: Audit result (not reachable) -->
+      <div class="slide" id="slide3">
+        <div class="badge red">● NOT REACHABLE</div>
+        <div class="verdict not-reachable">
+          <h3>Passenger P1 — Not reachable</h3>
+          <p>The contact on this booking belongs to the travel agent, not to you. Observed: bookings@okonkwo-travels.ng (travel agent)</p>
+        </div>
+        <div class="verdict not-reachable" style="margin-top: 12px;">
+          <h3>Passenger P1 — Phone mismatch</h3>
+          <p>The phone on this passenger (+2348000000000) does not match your verified phone.</p>
+        </div>
+        <p style="margin-top: 20px; font-size: 13px; color: #94a3b8;">Nothing is inferred. Nothing is written without your consent.</p>
+        <button id="correctBtn" style="background: #0f172a;">Propose correction</button>
+      </div>
+
+      <!-- Slide 4: Consent -->
+      <div class="slide" id="slide4">
+        <h1>Consent</h1>
+        <p style="font-size: 13px; line-height: 1.6; color: #475569;">
+          You authorise these contact details to be shared with the airline for operational flight notifications only. Not for marketing. Nothing is written until you approve.
+        </p>
+        <div style="margin-top: 20px;">
+          <label style="display: flex; align-items: start; gap: 10px; cursor: pointer;">
+            <input type="checkbox" id="consentCheckbox" style="margin-top: 2px; accent-color: #0f6f6b;">
+            <span>I approve the proposed contact corrections for this booking</span>
+          </label>
+        </div>
+        <button id="applyBtn" disabled style="background: #cbd5e1; color: #64748b;">Apply corrections</button>
+      </div>
+
+      <!-- Slide 5: Verified -->
+      <div class="slide" id="slide5">
+        <div class="badge green">● PASSENGER CONTACT VERIFIED</div>
+        <div class="verdict verified">
+          <h3>Passenger P1 — Reachable</h3>
+          <p>Your verified email and phone are attached to this passenger in the airline record.</p>
+        </div>
+        <div class="receipt active">
+          <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">PAX — Evidence Receipt</div>
+          <div>PNR: AX1234 &nbsp;|&nbsp; Surname: OKONKWO &nbsp;|&nbsp; Airline: MockAir</div>
+          <div>Overall: <span style="color: #065f46; font-weight: 700;">REACHABLE</span></div>
+          <div style="margin-top: 8px;">Verified at: <span id="receiptTime"></span></div>
+          <div style="margin-top: 8px; border-top: 1px solid #cbd5e1; padding-top: 8px; font-size: 12px;">
+            Passenger P1: reachable<br>
+            &nbsp;&nbsp;• CTCE: chima.okonkwo@example.com — match<br>
+            &nbsp;&nbsp;• CTCM: +2348012345678 — match
+          </div>
+          <div style="margin-top: 12px; font-size: 11px; color: #94a3b8;">
+            This receipt confirms the airline booking record contains the passenger's own contact details at the time of verification. It does not guarantee delivery of future airline messages.
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 6: False save (Drey moment) -->
+      <div class="slide" id="slide6">
+        <div class="badge red">● FALSE SAVE DETECTED</div>
+        <div class="verdict not-reachable">
+          <h3>Passenger P1 — Not persisted</h3>
+          <p>The portal showed "Saved" but the contact was never written to the record. Observed after reload: old@example.com</p>
+        </div>
+        <div class="toast fake" id="fakeToast">
+          ✓ Saved
+        </div>
+        <p style="margin-top: 20px; font-size: 13px; color: #94a3b8;">Kane CLI reloads the booking in a fresh read. The contact is still old@example.com.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const cursor = document.getElementById('cursor');
+    const ring = document.getElementById('ring');
+    const slides = ['slide1', 'slide2', 'slide3', 'slide4', 'slide5', 'slide6'];
+    let currentSlide = 0;
+
+    function showSlide(index) {
+      slides.forEach((id, i) => {
+        const el = document.getElementById(id);
+        if (i === index) {
+          el.classList.remove('exit');
+          el.classList.add('active');
+        } else {
+          el.classList.remove('active');
+          el.classList.add('exit');
+        }
+      });
+      currentSlide = index;
+    }
+
+    function moveCursor(x, y, duration = 800) {
+      cursor.classList.add('visible');
+      cursor.style.transition = `all ${duration}ms cubic-bezier(0.2, 0.8, 0.2, 1)`;
+      cursor.style.left = x + 'px';
+      cursor.style.top = y + 'px';
+    }
+
+    function highlight(selector, duration = 1000) {
+      const el = document.querySelector(selector);
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const phoneRect = document.querySelector('.phone').getBoundingClientRect();
+      ring.style.transition = `all ${duration}ms cubic-bezier(0.2, 0.8, 0.2, 1)`;
+      ring.style.left = (rect.left - phoneRect.left - 2) + 'px';
+      ring.style.top = (rect.top - phoneRect.top - 2) + 'px';
+      ring.style.width = (rect.width + 4) + 'px';
+      ring.style.height = (rect.height + 4) + 'px';
+      ring.classList.add('visible');
+    }
+
+    // Sequence
+    let pnrValue = '';
+    let surnameValue = '';
+
+    // Slide 1: Type PNR
+    const pnrInput = document.getElementById('pnrInput');
+    const surnameInput = document.getElementById('surnameInput');
+    const loadBtn = document.getElementById('loadBtn');
+
+    function typeInto(input, text, speed = 100) {
+      return new Promise(resolve => {
+        let i = 0;
+        input.focus();
+        const interval = setInterval(() => {
+          input.value += text[i];
+          i++;
+          if (i >= text.length) {
+            clearInterval(interval);
+            resolve();
+          }
+        }, speed);
+      });
+    }
+
+    async function run() {
+      // Move cursor to PNR field
+      moveCursor(120, 300);
+      highlight('#pnrInput');
+      await new Promise(r => setTimeout(r, 500));
+      await typeInto(pnrInput, 'AX1234', 60);
+      await new Promise(r => setTimeout(r, 300));
+
+      moveCursor(120, 380);
+      highlight('#surnameInput');
+      await new Promise(r => setTimeout(r, 500));
+      await typeInto(surnameInput, 'OKONKWO', 60);
+      await new Promise(r => setTimeout(r, 300));
+
+      moveCursor(120, 480);
+      highlight('#loadBtn');
+      await new Promise(r => setTimeout(r, 500));
+      loadBtn.click();
+
+      await new Promise(r => setTimeout(r, 800));
+      showSlide(1);
+      await new Promise(r => setTimeout(r, 600));
+
+      // Slide 2: Type email
+      const emailInput = document.getElementById('emailInput');
+      const phoneInput = document.getElementById('phoneInput');
+      const auditBtn = document.getElementById('auditBtn');
+
+      moveCursor(120, 260);
+      highlight('#emailInput');
+      await new Promise(r => setTimeout(r, 400));
+      await typeInto(emailInput, 'chima.okonkwo@example.com', 50);
+      await new Promise(r => setTimeout(r, 300));
+
+      moveCursor(120, 340);
+      highlight('#phoneInput');
+      await new Promise(r => setTimeout(r, 400));
+      await typeInto(phoneInput, '+2348012345678', 50);
+      await new Promise(r => setTimeout(r, 300));
+
+      moveCursor(120, 440);
+      highlight('#auditBtn');
+      await new Promise(r => setTimeout(r, 400));
+      auditBtn.click();
+
+      await new Promise(r => setTimeout(r, 1000));
+      showSlide(2);
+      await new Promise(r => setTimeout(r, 1200));
+
+      // Slide 3: Show verdicts
+      moveCursor(120, 200);
+      highlight('.verdict:first-child');
+      await new Promise(r => setTimeout(r, 800));
+
+      moveCursor(120, 320);
+      highlight('.verdict:nth-child(2)');
+      await new Promise(r => setTimeout(r, 800));
+
+      // Slide 4: Consent
+      showSlide(3);
+      await new Promise(r => setTimeout(r, 600));
+
+      moveCursor(80, 280);
+      highlight('#consentCheckbox');
+      await new Promise(r => setTimeout(r, 600));
+      document.getElementById('consentCheckbox').checked = true;
+
+      const applyBtn = document.getElementById('applyBtn');
+      applyBtn.disabled = false;
+      applyBtn.style.background = '#0f6f6b';
+      applyBtn.style.color = '#ffffff';
+
+      moveCursor(120, 380);
+      highlight('#applyBtn');
+      await new Promise(r => setTimeout(r, 500));
+      applyBtn.click();
+
+      await new Promise(r => setTimeout(r, 800));
+      showSlide(4);
+      await new Promise(r => setTimeout(r, 1000));
+
+      // Slide 5: Verified
+      document.getElementById('receiptTime').textContent = new Date().toISOString();
+      await new Promise(r => setTimeout(r, 1500));
+
+      // Slide 6: False save
+      showSlide(5);
+      await new Promise(r => setTimeout(r, 600));
+
+      const toast = document.getElementById('fakeToast');
+      toast.classList.add('show');
+      await new Promise(r => setTimeout(r, 1000));
+
+      moveCursor(120, 320);
+      highlight('.verdict');
+      await new Promise(r => setTimeout(r, 1000));
+    }
+
+    // Auto-start when visible
+    document.addEventListener('DOMContentLoaded', () => {
+      // Wait a moment for fonts
+      setTimeout(run, 1000);
+    });
+  </script>
+</body>
+</html>

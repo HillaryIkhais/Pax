@@ -35,6 +35,25 @@ A task is done only when:
 - Do not polish the UI before the mechanism is verified.
 - Do not commit after the internal cutoff (6–10 hours before the Nov 26, 7:29 PM WAT deadline).
 
+## Video production invariants (Phase 4 — Present)
+
+1. **The video's numbers equal the README's numbers.** Every statistic, test count, and Kane exit code shown on screen must match `README.md` and `TEST_REPORT.md`. Re-record if they drift.
+2. **No fake cursor, no edited results.** All product interaction is real. No post-production numbers.
+3. **Captions for every claim.** Judges watch muted. All 33 caption entries in `production/captions/captions.srt` must be synchronized.
+4. **The Drey moment is uncut.** ACT 4 (false-save RED → GREEN) shows real Kane CLI exit codes. No faking.
+5. **Human voiceover, not AI-rigid.** Conversational pacing. See `voiceover-script.md` for delivery notes.
+6. **Honesty first.** The sandbox limitation is stated explicitly in the video, not hidden.
+
+## Video definition of done
+
+- [ ] `product-demo.mp4` exported (1920×1080, 16:9, 30 FPS, ~120–150 seconds)
+- [ ] `captions.srt` synchronized and verified
+- [ ] Voiceover recorded and approved (human delivery, not robotic)
+- [ ] ACT 4 shows real Kane CLI exit codes (RED exit 1 → GREEN exit 0)
+- [ ] Every on-screen number matches `README.md` and `TEST_REPORT.md`
+- [ ] Video uploaded to YouTube, link tested in incognito
+- [ ] Video linked from README and submission form
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 ## This is NOT the Next.js you know
