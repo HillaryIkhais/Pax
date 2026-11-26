@@ -39,25 +39,12 @@ export async function POST(
   }
 
   const { passengerRef, ssrType, value, approved } = parsed.data;
-  const falseSave = pnrRow.pnr === FALSE_SAVE_PNR;
 
   if (!approved) {
     return NextResponse.json(
       { error: "contact update not approved by passenger" },
       { status: 400 }
     );
-  }
-
-  /* If false-save: pretend success but do NOT persist.               */
-  if (falseSave) {
-    return NextResponse.json({
-      ok: true,
-      saved: false,
-      falseSave: true,
-      message: "Saved", // green toast - deceptive
-      warning:
-        "The contact update was not persisted. Kane should catch this on fresh retrieval.",
-    });
   }
 
   /* Persist: upsert the SSR for this passenger/type.                 */

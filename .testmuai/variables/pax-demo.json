@@ -1,0 +1,11 @@
+{
+  "pnr": "FS7777",
+  "surname": "FALSE",
+  "airline": "MockAir",
+  "passenger_ref": "P1",
+  "email": "new@example.com",
+  "phone": "+2348000000001",
+  "expected_email": "",
+  "expected_phone": "",
+  "url": "http://localhost:3000"
+}

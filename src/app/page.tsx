@@ -75,19 +75,12 @@ export default function PaxPage() {
   const clearMessages = () => { setError(null); setMessage(null); };
 
   /* ---------- Step: start -> booking ---------- */
-  const loadDemo = (p: (typeof DEMO_PNRS)[number]) => {
-    setBooking({ airline: "MockAir", pnr: p.pnr, surname: p.surname, flightDate: "" });
-    setStep("booking");
-    clearMessages();
-  };
-
-  const handleBookingSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const loadBooking = async (pnr: string, surname: string) => {
     clearMessages();
     setLoading(true);
     try {
       const res = await fetch(
-        `/api/sandbox/search?pnr=${encodeURIComponent(booking.pnr)}&surname=${encodeURIComponent(booking.surname)}`
+        `/api/sandbox/search?pnr=${encodeURIComponent(pnr)}&surname=${encodeURIComponent(surname)}`
       );
       const json = await res.json();
       if (!json.ok) {
@@ -134,6 +127,17 @@ export default function PaxPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadDemo = async (p: (typeof DEMO_PNRS)[number]) => {
+    setBooking({ airline: "MockAir", pnr: p.pnr, surname: p.surname, flightDate: "" });
+    clearMessages();
+    await loadBooking(p.pnr, p.surname);
+  };
+
+  const handleBookingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await loadBooking(booking.pnr, booking.surname);
   };
 
   /* ---------- Step: verify ---------- */

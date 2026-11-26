@@ -1,0 +1,9 @@
+{
+  "objective": "Open the PAX app at http://localhost:3000. Retrieve booking AX1234 for surname OKONKWO in the Carrier Sandbox. Read the contact SSRs (CTCE email, CTCM mobile, CTCR declined) for passenger P1. Compare the observed contact against the passenger's verified contact (email: chima.okonkwo@example.com, phone: +2348012345678). Show the exact discrepancy and a proposed correction. Require explicit approval before writing. Apply only the approved correction through the UI. Reload the booking in a fresh page (independent read-back). Verify the persisted contact fields match chima.okonkwo@example.com and the correct passenger association. Do not accept a green \"Saved\" toast as proof. Return failure if the contact is absent or mismatched after reload (false-save detection).",
+  "exitCode": 2,
+  "durationMs": 2975,
+  "variablesFile": "/Users/ikhaisoshuare/Downloads/KANECLI/.testmuai/variables/pax-demo.json",
+  "stdout": "{\"type\":\"stream_start\",\"cli_version\":\"0.10.9\",\"surface\":\"run\",\"pid\":38915,\"v\":1,\"ts\":\"2026-11-26T07:10:11.275Z\"}\n{\"type\":\"recording_state\",\"enabled\":true,\"session_id\":\"998054f3-4d6a-4125-8091-2a3a52f048fb\",\"persist\":false,\"v\":1,\"ts\":\"2026-11-26T07:10:11.298Z\"}\n",
+  "stderr": "Skill update available: not installed → 0.1.4 — run `kane-cli install skill`\n\nProject and folder must be configured. Run `kane-cli login` to set up auth, or pass --username/--access-key, then `kane-cli config project <id>` / `kane-cli config folder <id>`.\n",
+  "capturedAt": "2026-11-26T07:10:12.363Z"
+}
